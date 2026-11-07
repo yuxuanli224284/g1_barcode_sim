@@ -32,6 +32,8 @@ html_theme_options = {
     "repository_url": "https://github.com/yuxuanli224284/g1_barcode_sim",
     "use_repository_button": True,
     "show_toc_level": 2,
+    # language button next to the repository button (top right of every page)
+    "icon_links": [{"name": "English", "url": "https://yuxuanli224284.github.io/g1_barcode_sim/en/", "icon": "fa-solid fa-language", "type": "fontawesome"}],
     # Language switch shown in the header of every page.
     "announcement": (
         '中文 | <a href="https://yuxuanli224284.github.io/g1_barcode_sim/en/">English</a>'
