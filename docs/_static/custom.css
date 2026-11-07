@@ -38,3 +38,9 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* Language switch in the header announcement bar (white on the theme's gray bar). */
+.bd-header-announcement a {
+  color: #fff;
+  text-decoration: underline;
+}
