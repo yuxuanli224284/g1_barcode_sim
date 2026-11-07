@@ -6,7 +6,7 @@
 
 ![s1_table 场景（机器人左后方视角）](docs/images/scene_s1_table_left_rear.jpg)
 
-**详细文档**（环境配置、实现细节、每个场景和 task suite 的说明）：[`docs/index.html`](docs/index.html)（clone 后用浏览器打开，或通过 GitHub Pages 访问）。
+**详细文档**（环境配置、实现细节、每个场景和 task suite 的说明）：<https://yuxuanli224284.github.io/g1_barcode_sim/>（源文件 [`docs/index.html`](docs/index.html)，clone 后也可直接用浏览器打开）。
 
 ## 主要内容
 
@@ -114,4 +114,4 @@ docs/                  详细文档网页与图片
 - `assets/gear_wbc/` 中的 GR00T WholeBodyControl 策略权重来自 [NVlabs/GR00T-WholeBodyControl](https://github.com/NVlabs/GR00T-WholeBodyControl)，遵循 NVIDIA Open Model License（见该目录下的 `NOTICE` 与许可证全文）。
 - 机器人模型与上游行走策略来自 [unitree_sim_isaaclab](https://github.com/unitreerobotics/unitree_sim_isaaclab)（Apache-2.0），不随本仓库分发。
 - 仓库背景与纸箱模型来自 NVIDIA Isaac Sim 资产库，运行时在线引用。
-- 本仓库代码的许可证：待定。
+- 本仓库代码：MIT License（见 [`LICENSE`](LICENSE)）；第三方组件遵循各自的许可证（见上）。
