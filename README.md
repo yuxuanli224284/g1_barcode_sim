@@ -4,9 +4,13 @@
 
 基于 Isaac Sim 5.1 / Isaac Lab 的仿真环境：Unitree G1 人形机器人左手夹持一把手持扫码枪，在仓库里寻找纸箱（桌面、货架、地面箱堆）上的条码标签，走过去、对准并扫码。环境提供头部 RGB-D 相机、枪头相机、全身行走控制、手臂 IK、基于图像解码的扫码判定和完整的 ground truth，以及可复现的测试场景集（task suites）。
 
-![s1_table 场景（机器人左后方视角）](docs/images/scene_s1_table_left_rear.jpg)
+| 桌面场景 | 货架场景 | 地面箱堆（四面贴码） |
+|:---:|:---:|:---:|
+| ![桌面场景](media/scene_table.jpg) | ![货架场景](media/scene_shelf.jpg) | ![地面箱堆](media/scene_stack.jpg) |
 
-**详细文档**（环境配置、实现细节、每个场景和 task suite 的说明）：<https://yuxuanli224284.github.io/g1_barcode_sim/>（源文件 [`docs/index.html`](docs/index.html)，clone 后也可直接用浏览器打开）。
+<sub>均为机器人左后方视角。</sub>
+
+**详细文档**（环境配置、实现细节、每个场景和 task suite 的说明）见 [`docs/`](docs/) 目录（Sphinx 文档源文件）。
 
 ## 主要内容
 
