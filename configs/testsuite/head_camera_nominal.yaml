@@ -1,0 +1,33 @@
+source: 'scripts/testsuite/measure_head_camera.py: standing robot (s1_table), mean
+  over 2 s; T_root_cam = head camera optical frame (ROS) in the pelvis frame'
+width: 640
+height: 480
+K:
+- - 243.2
+  - 0.0
+  - 320.0
+- - 0.0
+  - 243.2
+  - 240.0
+- - 0.0
+  - 0.0
+  - 1.0
+T_root_cam:
+- - -0.00014
+  - -0.73863
+  - 0.67411
+  - 0.05377
+- - -0.99999
+  - -0.00215
+  - -0.00256
+  - 0.01896
+- - 0.00334
+  - -0.67411
+  - -0.73862
+  - 0.47379
+- - 0.0
+  - 0.0
+  - 0.0
+  - 1.0
+root_height: 0.7853
+sway_std_m: 5.0e-05

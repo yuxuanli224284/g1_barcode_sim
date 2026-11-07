@@ -1,0 +1,16 @@
+scene_id: 1
+topdown: {center: [0.9, 0.0], height: 3.0}
+name: s1_table
+furniture:
+  - id: T01
+    kind: table
+    size: [0.60, 1.20, 0.75]        # x depth, y width, z height
+    front_x: 1.30                   # => top centre (1.60, 0)
+    center_y: 0.0
+    top_thickness: 0.03
+    leg_size: 0.05
+    color: [0.92, 0.92, 0.92]       # white matte
+    roughness: 0.9
+boxes:
+  - {id: B01, size: [0.30, 0.40, 0.30], place_on: {furniture: T01, y: -0.25, front_setback: 0.05}, barcodes: [{face: "-x"}]}
+  - {id: B02, size: [0.30, 0.40, 0.30], place_on: {furniture: T01, y: 0.25, front_setback: 0.05}, barcodes: [{face: "-x"}]}

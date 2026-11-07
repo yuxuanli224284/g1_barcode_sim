@@ -1,0 +1,20 @@
+# Base scene for test-suite scenarios: no furniture / boxes here; every reset(scenario=...)
+# authors the table, boxes and labels of that scenario (scenario_builder.py) and switches the background.
+scene_id: 0
+name: scenario
+furniture: []
+boxes: []
+scenario_backgrounds:              # extra backgrounds; `warehouse` = background in _common.yaml
+  none: {floor_size: 40.0, floor_color: [0.45, 0.45, 0.45]}       # neutral grey ground only
+  white: {center: [-0.8, 0.0], size: 14.0, wall_height: 4.0, color: [0.92, 0.92, 0.92]}   # white floor + walls
+scenario_lighting:                 # per background, multiplied by the scenario's light_scale
+  warehouse: {dome: 3000.0, distant: 1000.0}   # = _common.yaml lighting (the warehouse roof + its own lamps dominate:
+                                               # head-camera floor mean ~150 / 255 whatever the dome intensity)
+  none: {dome: 280.0, distant: 90.0}           # open sky: chosen so the grey floor reads like the warehouse floor (~150);
+                                               # measured floor mean 141 at 250/80, 167 at 500/150, 233 at 3000/1000
+  white: {dome: 1000.0, distant: 300.0}        # white floor mean 222 (not clipped; 1.3x light_scale stays < 255)
+topdown: {center: [0.0, 0.0], height: 8.0}
+views:
+  target_z: 0.6
+  list:
+    - {name: front_left, eye_offset: [-2.6, 2.6, 2.3], hfov: 70.0}

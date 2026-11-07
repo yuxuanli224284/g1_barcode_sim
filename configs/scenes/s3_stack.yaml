@@ -1,0 +1,12 @@
+scene_id: 3
+topdown: {center: [1.5, 0.0], height: 3.5}
+name: s3_stack
+stacks:
+  - id: ST01
+    counts: [3, 3, 3]               # x, y, z
+    box_size: 0.44
+    gap: 0.005
+    front_x: 1.50
+    center_y: 0.0
+    barcode_sides: [front, back, left, right]   # front=-x, back=+x, left=+y, right=-y
+clear_radius: 2.0                   # nothing else within 2 m of the stack

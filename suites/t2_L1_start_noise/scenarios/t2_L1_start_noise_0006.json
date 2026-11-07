@@ -1,0 +1,102 @@
+{
+ "id": "t2_L1_start_noise_0006",
+ "suite": "t2_L1_start_noise",
+ "task": 2,
+ "seed": 0,
+ "index": 6,
+ "level": "L1",
+ "factors_varied": [
+  "start_noise"
+ ],
+ "factor": {
+  "name": "start_noise",
+  "value": 0.5454545454545454
+ },
+ "background": {
+  "type": "warehouse",
+  "light_scale": 1.0
+ },
+ "table": {
+  "depth": 0.6,
+  "width": 1.2,
+  "height": 0.75,
+  "appearance": "white_matte"
+ },
+ "robot_init": {
+  "dist_to_table": 3.0,
+  "lateral_offset": 0.0,
+  "yaw_deg": 0.0
+ },
+ "boxes": [
+  {
+   "id": "B0",
+   "size_wdh": [
+    0.4,
+    0.3,
+    0.3
+   ],
+   "appearance": "kraft",
+   "setback": 0.05,
+   "y_center": -0.25
+  },
+  {
+   "id": "B1",
+   "size_wdh": [
+    0.4,
+    0.3,
+    0.3
+   ],
+   "appearance": "kraft",
+   "setback": 0.05,
+   "y_center": 0.25
+  }
+ ],
+ "barcodes": [
+  {
+   "box_id": "B0",
+   "type": "code128",
+   "width": 0.08,
+   "label_backing": true,
+   "aspect": 0.375,
+   "u": 0.0,
+   "v": 0.0,
+   "rot_deg": 0.0,
+   "content": "RBSPLTX5E",
+   "content_id": "T2L1-0006-B0"
+  },
+  {
+   "box_id": "B1",
+   "type": "code128",
+   "width": 0.08,
+   "label_backing": true,
+   "aspect": 0.375,
+   "u": 0.0,
+   "v": 0.0,
+   "rot_deg": 0.0,
+   "content": "95BVFF74E",
+   "content_id": "T2L1-0006-B1"
+  }
+ ],
+ "target": "left",
+ "task2_start": {
+  "pose_world": {
+   "x": 0.724,
+   "y": 0.2423,
+   "yaw_deg": -0.007
+  },
+  "noise": {
+   "dx": -0.026,
+   "dy": -0.0077,
+   "dyaw_deg": -0.007,
+   "bound_pos": 0.0573,
+   "bound_yaw_deg": 5.727
+  },
+  "lateral_offset": 0.0,
+  "lateral_feasible": [
+   -0.4,
+   0.4
+  ],
+  "obs_d": 0.6,
+  "obs_fits": true
+ }
+}

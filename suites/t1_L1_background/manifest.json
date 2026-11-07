@@ -1,0 +1,34 @@
+{
+ "suite": "t1_L1_background",
+ "base_suite": "t1_L1",
+ "version": 1,
+ "seed": 0,
+ "task": 1,
+ "level": "L1",
+ "count": 12,
+ "definition": {
+  "task": 1,
+  "level": "L1",
+  "factor": "background",
+  "n": 12
+ },
+ "rejections": {},
+ "warnings": [],
+ "skipped_infeasible": [],
+ "code_hash": "3283c1a58d0b88c1",
+ "head_camera_nominal": null,
+ "scenario_ids": [
+  "t1_L1_background_0000",
+  "t1_L1_background_0001",
+  "t1_L1_background_0002",
+  "t1_L1_background_0003",
+  "t1_L1_background_0004",
+  "t1_L1_background_0005",
+  "t1_L1_background_0006",
+  "t1_L1_background_0007",
+  "t1_L1_background_0008",
+  "t1_L1_background_0009",
+  "t1_L1_background_0010",
+  "t1_L1_background_0011"
+ ]
+}

@@ -1,0 +1,35 @@
+{
+ "suite": "t1_L1_robot_lateral",
+ "base_suite": "t1_L1",
+ "version": 1,
+ "seed": 0,
+ "task": 1,
+ "level": "L1",
+ "count": 13,
+ "definition": {
+  "task": 1,
+  "level": "L1",
+  "factor": "robot_lateral",
+  "n": 13
+ },
+ "rejections": {},
+ "warnings": [],
+ "skipped_infeasible": [],
+ "code_hash": "3283c1a58d0b88c1",
+ "head_camera_nominal": null,
+ "scenario_ids": [
+  "t1_L1_robot_lateral_0000",
+  "t1_L1_robot_lateral_0001",
+  "t1_L1_robot_lateral_0002",
+  "t1_L1_robot_lateral_0003",
+  "t1_L1_robot_lateral_0004",
+  "t1_L1_robot_lateral_0005",
+  "t1_L1_robot_lateral_0006",
+  "t1_L1_robot_lateral_0007",
+  "t1_L1_robot_lateral_0008",
+  "t1_L1_robot_lateral_0009",
+  "t1_L1_robot_lateral_0010",
+  "t1_L1_robot_lateral_0011",
+  "t1_L1_robot_lateral_0012"
+ ]
+}

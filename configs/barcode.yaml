@@ -1,0 +1,20 @@
+# Barcode label generation + attachment. Units: metres unless noted.
+type: code128                 # code128 | qr
+content_format: "S{scene}-B{box:02d}-F{face}"
+face_codes: {"-x": 0, "+x": 1, "-y": 2, "+y": 3, "+z": 4}   # F{n} in the content
+label_size:                   # white backing plate incl. quiet zone (w x h)
+  code128: [0.10, 0.05]
+  qr: [0.06, 0.06]
+pattern_size:                 # printed symbol, aspect preserved
+  code128: [0.08, 0.03]
+  qr: [0.05, 0.05]
+texture_long_edge_px: 1024    # >= 1024 per spec
+print_text: true              # human-readable content under the symbol
+text_height_frac: 0.18        # fraction of label height used for the text line
+label_thickness: 0.001        # 1 mm plate
+face_offset: 0.0015           # label sits 1.5 mm off the face (spec: 1-2 mm) to avoid z-fighting
+material: {roughness: 0.8, metallic: 0.0}
+randomize:
+  enabled: false
+  offset_uv: 0.03             # +-3 cm in-face offset
+  rot_deg: 10.0               # +-10 deg in-face rotation

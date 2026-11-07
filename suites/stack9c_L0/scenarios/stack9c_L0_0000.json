@@ -1,0 +1,196 @@
+{
+ "id": "stack9c_L0_0000",
+ "suite": "stack9c_L0",
+ "task": 3,
+ "seed": 0,
+ "index": 0,
+ "level": "L0",
+ "factors_varied": [],
+ "factor": {
+  "note": "hand-written 2026-11-07: stack9p_L0_0000 (3 x 3 stack, same 5 front codes) with every box drawn as the Isaac shipping-box asset (appearance 'cardbox', as the s2_shelf scene)"
+ },
+ "background": {
+  "type": "warehouse",
+  "light_scale": 1.0
+ },
+ "table": null,
+ "robot_init": {
+  "dist_to_table": 2.5,
+  "lateral_offset": 0.0,
+  "yaw_deg": 0.0
+ },
+ "boxes": [
+  {
+   "id": "L0",
+   "size_wdh": [
+    0.4,
+    0.4,
+    0.38
+   ],
+   "appearance": "cardbox",
+   "setback": 0.0,
+   "y_center": 0.4,
+   "on": null
+  },
+  {
+   "id": "L1",
+   "size_wdh": [
+    0.4,
+    0.4,
+    0.38
+   ],
+   "appearance": "cardbox",
+   "setback": 0.0,
+   "y_center": 0.4,
+   "on": "L0"
+  },
+  {
+   "id": "L2",
+   "size_wdh": [
+    0.4,
+    0.4,
+    0.38
+   ],
+   "appearance": "cardbox",
+   "setback": 0.0,
+   "y_center": 0.4,
+   "on": "L1"
+  },
+  {
+   "id": "C0",
+   "size_wdh": [
+    0.4,
+    0.4,
+    0.38
+   ],
+   "appearance": "cardbox",
+   "setback": 0.0,
+   "y_center": 0.0,
+   "on": null
+  },
+  {
+   "id": "C1",
+   "size_wdh": [
+    0.4,
+    0.4,
+    0.38
+   ],
+   "appearance": "cardbox",
+   "setback": 0.0,
+   "y_center": 0.0,
+   "on": "C0"
+  },
+  {
+   "id": "C2",
+   "size_wdh": [
+    0.4,
+    0.4,
+    0.38
+   ],
+   "appearance": "cardbox",
+   "setback": 0.0,
+   "y_center": 0.0,
+   "on": "C1"
+  },
+  {
+   "id": "R0",
+   "size_wdh": [
+    0.4,
+    0.4,
+    0.38
+   ],
+   "appearance": "cardbox",
+   "setback": 0.0,
+   "y_center": -0.4,
+   "on": null
+  },
+  {
+   "id": "R1",
+   "size_wdh": [
+    0.4,
+    0.4,
+    0.38
+   ],
+   "appearance": "cardbox",
+   "setback": 0.0,
+   "y_center": -0.4,
+   "on": "R0"
+  },
+  {
+   "id": "R2",
+   "size_wdh": [
+    0.4,
+    0.4,
+    0.38
+   ],
+   "appearance": "cardbox",
+   "setback": 0.0,
+   "y_center": -0.4,
+   "on": "R1"
+  }
+ ],
+ "barcodes": [
+  {
+   "box_id": "L2",
+   "type": "code128",
+   "width": 0.08,
+   "label_backing": true,
+   "aspect": 0.375,
+   "u": 0.05,
+   "v": 0.15,
+   "rot_deg": 0.0,
+   "content": "T5L2QWX8A",
+   "content_id": "STK9P-0000-L2"
+  },
+  {
+   "box_id": "R2",
+   "type": "code128",
+   "width": 0.08,
+   "label_backing": true,
+   "aspect": 0.375,
+   "u": -0.08,
+   "v": 0.12,
+   "rot_deg": 0.0,
+   "content": "T5R2MZK3B",
+   "content_id": "STK9P-0000-R2"
+  },
+  {
+   "box_id": "C1",
+   "type": "code128",
+   "width": 0.08,
+   "label_backing": true,
+   "aspect": 0.375,
+   "u": 0.08,
+   "v": 0.0,
+   "rot_deg": 0.0,
+   "content": "M5C1HPV7C",
+   "content_id": "STK9P-0000-C1"
+  },
+  {
+   "box_id": "L0",
+   "type": "code128",
+   "width": 0.08,
+   "label_backing": true,
+   "aspect": 0.375,
+   "u": 0.0,
+   "v": 0.11,
+   "rot_deg": 0.0,
+   "content": "B5L0RTY4D",
+   "content_id": "STK9P-0000-L0"
+  },
+  {
+   "box_id": "R0",
+   "type": "code128",
+   "width": 0.08,
+   "label_backing": true,
+   "aspect": 0.375,
+   "u": -0.04,
+   "v": 0.13,
+   "rot_deg": 0.0,
+   "content": "B5R0NWE6E",
+   "content_id": "STK9P-0000-R0"
+  }
+ ],
+ "target": "all",
+ "task2_start": null
+}

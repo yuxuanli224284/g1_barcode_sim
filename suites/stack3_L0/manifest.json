@@ -1,0 +1,21 @@
+{
+ "suite": "stack3_L0",
+ "base_suite": "stack3_L0",
+ "version": 1,
+ "seed": 0,
+ "task": 3,
+ "level": "L0",
+ "count": 2,
+ "definition": {
+  "note": "hand-written (no generator support for floor stacks yet); see scenario factor.note"
+ },
+ "rejections": {},
+ "warnings": [],
+ "skipped_infeasible": [],
+ "code_hash": null,
+ "head_camera_nominal": null,
+ "scenario_ids": [
+  "stack3_L0_0000",
+  "stack3_L0_0001"
+ ]
+}

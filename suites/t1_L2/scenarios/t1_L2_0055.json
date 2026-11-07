@@ -1,0 +1,85 @@
+{
+ "id": "t1_L2_0055",
+ "suite": "t1_L2",
+ "task": 1,
+ "seed": 0,
+ "index": 55,
+ "level": "L2",
+ "factors_varied": [
+  "robot_dist",
+  "robot_lateral",
+  "box_shape",
+  "box_appearance",
+  "placement",
+  "barcode_size",
+  "background",
+  "lighting"
+ ],
+ "factor": null,
+ "background": {
+  "type": "white",
+  "light_scale": 1.2505
+ },
+ "table": {
+  "depth": 0.6543,
+  "width": 1.7676,
+  "height": 0.7864,
+  "appearance": "white_matte"
+ },
+ "robot_init": {
+  "dist_to_table": 3.2222,
+  "lateral_offset": 1.3917,
+  "yaw_deg": 0.0
+ },
+ "boxes": [
+  {
+   "id": "B0",
+   "size_wdh": [
+    0.5985,
+    0.2016,
+    0.1639
+   ],
+   "appearance": "kraft_tape",
+   "setback": 0.1296,
+   "y_center": 0.0946
+  },
+  {
+   "id": "B1",
+   "size_wdh": [
+    0.2662,
+    0.4562,
+    0.3396
+   ],
+   "appearance": "kraft",
+   "setback": 0.0922,
+   "y_center": 0.6736
+  }
+ ],
+ "barcodes": [
+  {
+   "box_id": "B0",
+   "type": "qr",
+   "width": 0.0301,
+   "label_backing": true,
+   "u": 0.1695,
+   "v": 0.0127,
+   "rot_deg": 2.261,
+   "content": "C2RUZK59WP",
+   "content_id": "T1L2-0055-B0"
+  },
+  {
+   "box_id": "B1",
+   "type": "code128",
+   "width": 0.1048,
+   "label_backing": true,
+   "aspect": 0.3042,
+   "u": 0.034,
+   "v": 0.0624,
+   "rot_deg": 91.394,
+   "content": "PC9KHZ",
+   "content_id": "T1L2-0055-B1"
+  }
+ ],
+ "target": "right",
+ "task2_start": null
+}

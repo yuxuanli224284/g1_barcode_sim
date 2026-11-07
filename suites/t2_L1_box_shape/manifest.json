@@ -1,0 +1,51 @@
+{
+ "suite": "t2_L1_box_shape",
+ "base_suite": "t2_L1",
+ "version": 1,
+ "seed": 0,
+ "task": 2,
+ "level": "L1",
+ "count": 10,
+ "definition": {
+  "task": 2,
+  "level": "L1",
+  "factor": "box_shape",
+  "n": 12
+ },
+ "rejections": {
+  "task2_not_visible": 100
+ },
+ "warnings": [],
+ "skipped_infeasible": [
+  {
+   "index": 10,
+   "factor_value": 0.9090909090909091,
+   "reasons": [
+    "task2_not_visible"
+   ],
+   "attempts": 50
+  },
+  {
+   "index": 11,
+   "factor_value": 1.0,
+   "reasons": [
+    "task2_not_visible"
+   ],
+   "attempts": 50
+  }
+ ],
+ "code_hash": "c05922f0ba4fb84e",
+ "head_camera_nominal": "configs/testsuite/head_camera_nominal.yaml",
+ "scenario_ids": [
+  "t2_L1_box_shape_0000",
+  "t2_L1_box_shape_0001",
+  "t2_L1_box_shape_0002",
+  "t2_L1_box_shape_0003",
+  "t2_L1_box_shape_0004",
+  "t2_L1_box_shape_0005",
+  "t2_L1_box_shape_0006",
+  "t2_L1_box_shape_0007",
+  "t2_L1_box_shape_0008",
+  "t2_L1_box_shape_0009"
+ ]
+}

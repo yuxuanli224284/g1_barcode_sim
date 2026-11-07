@@ -1,0 +1,22 @@
+{
+ "suite": "stack4f_L0",
+ "base_suite": "stack4f_L0",
+ "version": 1,
+ "seed": 0,
+ "task": 3,
+ "level": "L0",
+ "count": 3,
+ "definition": {
+  "note": "hand-written"
+ },
+ "rejections": {},
+ "warnings": [],
+ "skipped_infeasible": [],
+ "code_hash": null,
+ "head_camera_nominal": null,
+ "scenario_ids": [
+  "stack4f_L0_0000",
+  "stack4f_L0_0001",
+  "stack4f_L0_0002"
+ ]
+}

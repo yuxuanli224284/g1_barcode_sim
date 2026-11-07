@@ -1,0 +1,101 @@
+# Robot + end effector
+end_effector: dex1                   # dex1 | dex3 | inspire
+templates:                           # upstream Wholebody task used as the template for each end effector
+  dex1: Isaac-Move-Cylinder-G129-Dex1-Wholebody
+  dex3: Isaac-Move-Cylinder-G129-Dex3-Wholebody
+  inspire: Isaac-Move-Cylinder-G129-Inspire-Wholebody
+policy_model: assets/model/policy1.onnx  # upstream ships policy.onnx (sim_main default) and policy1.onnx; policy1 tracks
+                                         # low-speed / lateral / yaw commands far better (measured)
+height_cmd: 0.8                      # 4th policy command entry; upstream default (unitree walker only)
+locomotion: gear_wbc                 # gear_wbc | unitree. gear_wbc = NVIDIA GR00T Decoupled WBC Balance/Walk (legs + waist)
+                                     # gear_wbc block; unitree = upstream wholebody ONNX (policy_model, legs only, waist held).
+                                     # Default gear_wbc since 2026-11-06: stand drift 1.9 vs 9.4 cm, move_relative 7/8 vs 2/8
+                                     # within tolerance, walks backwards, no low-speed dead zone
+gear_wbc:                            # used when locomotion: gear_wbc (g1_barcode_sim/gear_wbc.py)
+  model_dir: assets/gear_wbc
+  balance_onnx: GR00T-WholeBodyControl-Balance.onnx
+  walk_onnx: GR00T-WholeBodyControl-Walk.onnx
+  reference_yaml: assets/gear_wbc/g1_gear_wbc.sim2mujoco.yaml   # scales, default angles, kp/kd, history, dt (GR00T sim2mujoco)
+  height_cmd: null                   # null = reference yaml (0.74); benchmark sweep alternative 0.70
+  height_cmd_range: [0.20, 0.74]     # m; upstream GR00T teleop clamp (decoupled_wbc pico_streamer.py:139, joycon_streamer.py:428)
+  rpy_cmd_limit_rad: [0.4, 0.6, 0.8] # |roll|, |pitch|, |yaw| torso command. Upstream has no clamp; MuJoCo run of the same
+                                     # ONNX (2026-11-06 survey): pitch tracked ~1:1 with a level pelvis up to 0.6 (waist pitch
+                                     # limit 0.52 rad beyond), waist roll saturated ~0.4, yaw tracked to 0.8. Isaac check:
+  switch_norm: 0.05                  # Balance net iff ||(vx,vy,wz)|| < this (GR00T policy.py / Arena)
+  init_z: 0.78                       # spawn root z at the GR00T default stance (IsaacLab-Arena g1.py)
+  actuator: ideal_pd                 # ideal_pd (explicit PD, as GR00T MuJoCo sims and Arena at dt 0.005x4) | implicit
+  armature: 0.01                     # GR00T MJCFs (Arena 0.03)
+  friction: 0.0
+  effort_limit:                      # N m, Unitree G1 motor limits as in the GR00T MJCF / Arena / benchmark
+    hip_pitch: 88.0
+    hip_roll: 88.0
+    hip_yaw: 88.0
+    knee: 139.0
+    ankle_pitch: 50.0
+    ankle_roll: 50.0
+    waist_yaw: 88.0
+    waist_roll: 50.0
+    waist_pitch: 50.0
+  velocity_limit:                    # rad/s, same sources
+    hip_pitch: 32.0
+    hip_roll: 32.0
+    hip_yaw: 32.0
+    knee: 20.0
+    ankle_pitch: 37.0
+    ankle_roll: 37.0
+    waist_yaw: 32.0
+    waist_roll: 37.0
+    waist_pitch: 37.0
+  kp_override: {}                    # e.g. {knee: 300} (Arena) for sweeps; default = reference yaml kps
+  move_relative: {}                  # deep-merged over the top-level move_relative block when locomotion: gear_wbc
+mode_policies: null                  # optional {walk: <onnx>, stand: <onnx>}: use `walk` while a non-zero base velocity is
+                                     # commanded and `stand` otherwise (standing, arm motions); null = policy_model always.
+                                     # Both upstream policies share the observation / action layout (910 -> 12).
+init_pos: [0.0, 0.0, 0.80]           # root z from the upstream wholebody preset
+init_yaw: 0.0
+physics_device: cpu                  # as in the upstream README
+velocity_limits: {vx: 0.4, vy: 0.5, wz: 1.0}   # spec default vy 0.3 / wz 0.6 sit at the policy's dead-zone edge
+fall:
+  tilt_deg: 45.0                     # spec
+  pelvis_min_z: null                 # filled after measuring standing height
+gripper:                             # Isaac Lab joint targets, from upstream tools/data_convert.py
+  joint_open: -0.02
+  joint_closed: 0.024
+  joints: {left: [left_hand_Joint1_1, left_hand_Joint2_1], right: [right_hand_Joint1_1, right_hand_Joint2_1]}
+  pad_links:                         # finger links whose collision geometry forms each pad (finger1 = +x_hand side)
+    finger1: ["{side}_hand_Link1_2", "{side}_hand_Link1_3"]
+    finger2: ["{side}_hand_Link2_2", "{side}_hand_Link2_3"]
+odom:
+  mode: drift_on_gt                  # no estimator in the upstream repo -> GT + configurable drift
+  pos_err_per_m: 0.02
+  yaw_err_deg_per_m: 1.0
+move_relative:
+  pos_tol: 0.03
+  yaw_tol: 0.03
+  brake_dist_lin: 0.15               # m: below this error the linear command ramps down from the limit
+  brake_dist_ang: 0.30               # rad: same for yaw
+  min_cmd: {vx: 0.15, vy: 0.3, wz: 0.6}   # smallest commands policy1 executes from standstill (3 s sweep)
+  timeout_check: 20.0               # timeout used by check_env.py for each move_relative
+  stop_time_s: 0.0                  # stopping-distance prediction OFF: v_cmd * t and v_meas * t variants both failed; kept for experiments
+                                    # measured: the base travels 10-15 cm after the command drops to 0 from 0.4 m/s
+  settle_speed: 0.03                # m/s: below this for settle_hold_s the base counts as stopped
+  settle_hold_s: 0.3
+  settle_max_s: 3.0
+  max_rounds: 3                     # move -> settle -> re-check rounds
+scanner_mount:                       # Xform under the left gripper base link = scanner frame G (configs/scanner.yaml)
+  parent_link: left_hand_base_link
+  pos: [0.0, 0.110, 0.0]             # grip point: middle of the finger pads (pads span y 0.066-0.147 m, z +-0.015 m; measured)
+  quat_wxyz: [0.70710678, 0.0, 0.0, 0.70710678]   # Rz(+90 deg): x_G (scan direction) = +y_hand (along the fingers),
+                                                  # z_G (handle -> head) = +z_hand, y_G = -x_hand
+collision_gap: 0.0                   # step() reports "collision" when robot geometry is closer than this to a scene obstacle
+arm_ik:                              # wrist position control (arm.py): damped-least-squares IK, position only
+  ee_link: "{side}_hand_base_link"   # controlled point = gripper base (wrist)
+  dls_lambda: 0.05                   # damping of the least-squares step
+  gain: 0.1                          # fraction of the error corrected per policy step (tuned)
+  max_dq_per_step: 0.05              # rad per policy step (= 2.5 rad/s at 50 Hz)
+  workspace_half_extent: [0.25, 0.25, 0.25]   # targets clamped to default wrist position +- this (m, root frame)
+  settle_tol: 0.03                   # rad: arms count as settled at the default pose (for measuring the home wrist position)
+  settle_max_s: 3.0                  # give up (error) if they have not settled by then; measured settle time ~1 s
+  aim_weight: 0.20                   # m/rad, scanner aim mode: an angle error e moves the aim point by ~d*e at scan
+                                     # distance d, so the direction rows are weighted by the nominal scan distance
+                                     # (0.20 m, TASK/AGENT README) to trade position vs direction error in m

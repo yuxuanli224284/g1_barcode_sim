@@ -1,0 +1,52 @@
+# Handheld barcode scanner + muzzle ("wrist") camera.
+#
+# Frames
+#   hand  = left_hand_base_link (Dex1 gripper base). Measured: fingers extend along +y_hand
+#           (finger pads at y 0.066-0.147 m), the two fingers close along x_hand, pads span z +-0.015 m.
+#   G     = scanner frame = `scanner_mount` (robot.yaml gives T_hand_G): origin at the grip point between the
+#           finger pads, +x_G = barrel / scan direction (= +y_hand, along the fingers), +z_G = handle axis
+#           towards the head (= +z_hand), +y_G = z_G x x_G (= -x_hand).
+#   tip   = scan reference point: centre of the exit window, +x_tip = scan direction (same axes as G).
+#   cam   = muzzle camera, ROS optical frame (+z forward = +x_G, +x right = -y_G, +y down = -z_G).
+enabled: true                        # false: only the empty scanner_mount Xform, no gun / camera / grip
+                                     # held by the gripper of robot.yaml scanner_mount.parent_link (left)
+
+# Gun geometry, all in the G frame (m). Outer envelope 0.16 (h) x 0.066 (w) x 0.105 (l) follows a common
+# handheld imager (Zebra DS2208 data sheet: 16.5 x 6.6 x 9.9 cm); the split into parts is mine.
+# Visual only (no collider, no mass); the parts are added to the robot clearance model (collision.py).
+parts:
+  - {name: handle,  center: [0.000, 0.0, -0.0175], size: [0.040, 0.030, 0.105], color: [0.12, 0.12, 0.13]}
+  - {name: head,    center: [0.020, 0.0,  0.0600], size: [0.100, 0.066, 0.050], color: [0.15, 0.15, 0.16]}
+  - {name: nose,    center: [0.0625, 0.0, 0.0600], size: [0.015, 0.070, 0.056], color: [0.95, 0.75, 0.10]}
+  - {name: window,  center: [0.0705, 0.0, 0.0600], size: [0.001, 0.050, 0.034], color: [0.05, 0.05, 0.08]}
+  - {name: trigger, center: [0.026, 0.0, -0.030],  size: [0.012, 0.012, 0.020], color: [0.85, 0.15, 0.10]}
+tip:                                 # T_G_tip: exit-window centre, axes = G
+  pos: [0.071, 0.0, 0.060]
+handle_width: 0.030                  # handle size along y_G (= finger closing direction); the left gripper is
+                                     # commanded so its pads touch the handle faces (env computes the joint target)
+
+camera:                              # camera at the scanner head = the scanner's imager, looking along the scan direction
+  # No real camera parameters yet (user, 2026-11-05: "pick an approximate one") -> the imager of the scanner the
+  # body is modelled on, Zebra DS2208: 640x480 sensor, field of view 32.8 deg H x 24.8 deg V (spec sheet values
+  # as listed by distributors; 4:3 with square pixels). focal_length = (aperture/2) / tan(32.8/2 deg) = 33.98 mm
+  # with the 20 mm aperture -> fx = 1087 px. Was: upstream Dex1 wrist camera (focal 12 mm, hFOV 79.6 deg).
+  source: "Zebra DS2208 imager (spec sheet: 640x480, FOV 32.8 x 24.8 deg)"
+  prim_name: wrist_cam               # prim created under the hand link: <hand link>/wrist_cam
+  width: 640
+  height: 480
+  focal_length: 33.98
+  horizontal_aperture: 20.0
+  focus_distance: 400.0
+  clipping_range: [0.01, 100.0]      # upstream near plane 0.1 m; lowered because the camera sits at the gun tip and
+                                     # scan targets come closer than 0.1 m (anything nearer than the plane is not drawn)
+  pos_in_tip: [0.0005, 0.0, 0.0]     # camera centre 0.5 mm in front of the window so the window itself is not seen
+  data_types: [rgb, distance_to_image_plane]   # upstream wrist cameras are rgb only; depth added for aiming / debugging
+  depth_valid_range: null            # null = return rendered depth unmasked; [lo, hi] = set values outside to 0
+
+scan:                                # env.scan(): decode the scanner-camera image with pyzbar
+  rotation_step_deg: 90              # 2026-11-07 user decision: a real scanner does not read a code tilted against its
+                                     # image frame, so only the captured image is decoded (0 deg; the loop runs 0..<90).
+                                     # zbar then reads bars within ~+-17 deg of an image axis (measured on a
+                                     # scanner-camera frame: decodable windows ~35 deg wide, every 90 deg); the agent
+                                     # aligns the image horizontal with the code's long axis. Was 15 (omnidirectional
+                                     # model: decoded at 0, 15, ..., 75 deg) for every run before 2026-11-07 03:00

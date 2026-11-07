@@ -1,0 +1,42 @@
+# Head camera. Source priority: (1) unitree_sim_isaaclab's existing G1 head camera
+# config -> (2) G1 URDF/USD camera link -> (3) D435i defaults. Values below are (1) unless marked.
+source: "unitree_sim_isaaclab tasks/common_config/camera_configs.py CameraPresets.g1_front_camera"
+prim_parent_link: d435_link          # link in the G1 USD
+prim_name: front_cam
+width: 640
+height: 480
+focal_length: 7.6                    # mm (upstream). hFOV = 2*atan(20/2/7.6) = 105.5 deg  != D435i 69 deg
+horizontal_aperture: 20.0            # mm (upstream)
+focus_distance: 400.0
+clipping_range: [0.1, 100000.0]      # upstream
+offset_pos: [0.0, 0.0, 0.0]          # T_link_cam translation (upstream)
+offset_rot_wxyz: [0.5, -0.5, 0.5, -0.5]   # upstream, "ros" convention (optical frame: x right, y down, z forward)
+offset_convention: ros
+update_hz: null                      # null = every policy step (50 Hz). A render happens every policy step anyway,
+                                     # so throttling to 30 Hz saves nothing and only makes the image lag the pose.
+depth:
+  valid_range: [0.2, 3.0]            # outside -> 0 (spec)
+  noise:
+    enabled: false
+    sigma_coeff: 0.002               # sigma = coeff * z^2 (spec)
+    hole_prob: 0.01                  # fraction of edge pixels turned into holes when enabled
+aux:                                 # off-robot camera for top-down snapshots and debug decoding
+  width: 1280
+  height: 720
+  focal_length: 18.15                # with 20.955 mm aperture -> 60 deg hFOV
+  horizontal_aperture: 20.955
+  clipping_range: [0.05, 100.0]
+render:
+  antialiasing_mode: DLAA            # native-resolution AA; the default DLSS renders below the output resolution and upsamples
+aux_render_passes: 2                 # renders after moving the aux camera before reading it
+recording:                           # fixed cameras for the composite episode video
+  enabled: false                     # off: a camera renders on every policy step whether read or not; the sim server
+                                     # turns it on via config_overrides
+  cameras:                           # rgb only, lens of `aux` above; pose + hFOV set per episode (pose_rec_camera)
+    main: {width: 1280, height: 720}  # = MAIN panel of the 1920x1080 composite (native size, no resampling)
+    side: {width: 640, height: 360}   # = SIDE panel
+# --- check_env.py
+visibility_depth_tol: 0.02           # |rendered depth - expected depth| below this at the projected centre => not occluded
+decode_distance: 0.30                # aux-camera debug decode distance
+decode_label_width_frac: 0.5         # debug camera hFOV chosen so the label spans this fraction of the 1280 px width
+clearance_settle_s: 1.0              # stand this long at each target pose before re-measuring clearance

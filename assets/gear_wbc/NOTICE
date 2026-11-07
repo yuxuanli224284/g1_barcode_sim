@@ -1,0 +1,6 @@
+GR00T-WholeBodyControl-Balance.onnx, GR00T-WholeBodyControl-Walk.onnx
+Licensed by NVIDIA Corporation under the NVIDIA Open Model License (see NVIDIA_Open_Model_License.txt).
+Source: https://github.com/NVlabs/GR00T-WholeBodyControl (decoupled_wbc/sim2mujoco/resources/robots/g1), copied unmodified.
+
+g1_gear_wbc.sim2mujoco.yaml
+From the same repository, licensed under the Apache License 2.0.

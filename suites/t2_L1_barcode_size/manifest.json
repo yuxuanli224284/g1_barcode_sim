@@ -1,0 +1,32 @@
+{
+ "suite": "t2_L1_barcode_size",
+ "base_suite": "t2_L1",
+ "version": 1,
+ "seed": 0,
+ "task": 2,
+ "level": "L1",
+ "count": 10,
+ "definition": {
+  "task": 2,
+  "level": "L1",
+  "factor": "barcode_size",
+  "n": 10
+ },
+ "rejections": {},
+ "warnings": [],
+ "skipped_infeasible": [],
+ "code_hash": "c05922f0ba4fb84e",
+ "head_camera_nominal": "configs/testsuite/head_camera_nominal.yaml",
+ "scenario_ids": [
+  "t2_L1_barcode_size_0000",
+  "t2_L1_barcode_size_0001",
+  "t2_L1_barcode_size_0002",
+  "t2_L1_barcode_size_0003",
+  "t2_L1_barcode_size_0004",
+  "t2_L1_barcode_size_0005",
+  "t2_L1_barcode_size_0006",
+  "t2_L1_barcode_size_0007",
+  "t2_L1_barcode_size_0008",
+  "t2_L1_barcode_size_0009"
+ ]
+}

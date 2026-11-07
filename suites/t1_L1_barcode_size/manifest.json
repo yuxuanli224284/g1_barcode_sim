@@ -1,0 +1,32 @@
+{
+ "suite": "t1_L1_barcode_size",
+ "base_suite": "t1_L1",
+ "version": 1,
+ "seed": 0,
+ "task": 1,
+ "level": "L1",
+ "count": 10,
+ "definition": {
+  "task": 1,
+  "level": "L1",
+  "factor": "barcode_size",
+  "n": 10
+ },
+ "rejections": {},
+ "warnings": [],
+ "skipped_infeasible": [],
+ "code_hash": "3283c1a58d0b88c1",
+ "head_camera_nominal": null,
+ "scenario_ids": [
+  "t1_L1_barcode_size_0000",
+  "t1_L1_barcode_size_0001",
+  "t1_L1_barcode_size_0002",
+  "t1_L1_barcode_size_0003",
+  "t1_L1_barcode_size_0004",
+  "t1_L1_barcode_size_0005",
+  "t1_L1_barcode_size_0006",
+  "t1_L1_barcode_size_0007",
+  "t1_L1_barcode_size_0008",
+  "t1_L1_barcode_size_0009"
+ ]
+}

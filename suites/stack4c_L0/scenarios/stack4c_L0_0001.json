@@ -1,0 +1,251 @@
+{
+ "id": "stack4c_L0_0001",
+ "suite": "stack4c_L0",
+ "task": 3,
+ "seed": 0,
+ "index": 1,
+ "level": "L0",
+ "factors_varied": [],
+ "factor": {
+  "note": "hand-written 2026-11-07: the stack4f_L0_0000 stack (2 x 2 x 3 boxes of 0.40 x 0.40 x 0.38 m, front x 1.30, free-standing) with every box drawn as the Isaac shipping-box asset (appearance 'cardbox': kraft, packing tape, printed shipping stickers, as the s2_shelf scene); robot starts 2.5 m in front, parallel. Labels: only the front (-x) and back (+x) sides carry codes (the 6 codes of stack4f_L0_0000 on those sides, 3 each); the right and left sides have none."
+ },
+ "background": {
+  "type": "warehouse",
+  "light_scale": 1.0
+ },
+ "table": null,
+ "robot_init": {
+  "dist_to_table": 2.5,
+  "lateral_offset": 0.0,
+  "yaw_deg": 0.0
+ },
+ "boxes": [
+  {
+   "id": "LF0",
+   "size_wdh": [
+    0.4,
+    0.4,
+    0.38
+   ],
+   "appearance": "cardbox",
+   "setback": 0.0,
+   "y_center": 0.2,
+   "on": null
+  },
+  {
+   "id": "LF1",
+   "size_wdh": [
+    0.4,
+    0.4,
+    0.38
+   ],
+   "appearance": "cardbox",
+   "setback": 0.0,
+   "y_center": 0.2,
+   "on": "LF0"
+  },
+  {
+   "id": "LF2",
+   "size_wdh": [
+    0.4,
+    0.4,
+    0.38
+   ],
+   "appearance": "cardbox",
+   "setback": 0.0,
+   "y_center": 0.2,
+   "on": "LF1"
+  },
+  {
+   "id": "LB0",
+   "size_wdh": [
+    0.4,
+    0.4,
+    0.38
+   ],
+   "appearance": "cardbox",
+   "setback": 0.4,
+   "y_center": 0.2,
+   "on": null
+  },
+  {
+   "id": "LB1",
+   "size_wdh": [
+    0.4,
+    0.4,
+    0.38
+   ],
+   "appearance": "cardbox",
+   "setback": 0.4,
+   "y_center": 0.2,
+   "on": "LB0"
+  },
+  {
+   "id": "LB2",
+   "size_wdh": [
+    0.4,
+    0.4,
+    0.38
+   ],
+   "appearance": "cardbox",
+   "setback": 0.4,
+   "y_center": 0.2,
+   "on": "LB1"
+  },
+  {
+   "id": "RF0",
+   "size_wdh": [
+    0.4,
+    0.4,
+    0.38
+   ],
+   "appearance": "cardbox",
+   "setback": 0.0,
+   "y_center": -0.2,
+   "on": null
+  },
+  {
+   "id": "RF1",
+   "size_wdh": [
+    0.4,
+    0.4,
+    0.38
+   ],
+   "appearance": "cardbox",
+   "setback": 0.0,
+   "y_center": -0.2,
+   "on": "RF0"
+  },
+  {
+   "id": "RF2",
+   "size_wdh": [
+    0.4,
+    0.4,
+    0.38
+   ],
+   "appearance": "cardbox",
+   "setback": 0.0,
+   "y_center": -0.2,
+   "on": "RF1"
+  },
+  {
+   "id": "RB0",
+   "size_wdh": [
+    0.4,
+    0.4,
+    0.38
+   ],
+   "appearance": "cardbox",
+   "setback": 0.4,
+   "y_center": -0.2,
+   "on": null
+  },
+  {
+   "id": "RB1",
+   "size_wdh": [
+    0.4,
+    0.4,
+    0.38
+   ],
+   "appearance": "cardbox",
+   "setback": 0.4,
+   "y_center": -0.2,
+   "on": "RB0"
+  },
+  {
+   "id": "RB2",
+   "size_wdh": [
+    0.4,
+    0.4,
+    0.38
+   ],
+   "appearance": "cardbox",
+   "setback": 0.4,
+   "y_center": -0.2,
+   "on": "RB1"
+  }
+ ],
+ "barcodes": [
+  {
+   "box_id": "LF2",
+   "face": "-x",
+   "type": "code128",
+   "width": 0.08,
+   "label_backing": true,
+   "aspect": 0.375,
+   "u": 0.04,
+   "v": 0.15,
+   "rot_deg": 0.0,
+   "content": "F4ATLFRVG",
+   "content_id": "STK4F-0000-LF2-mx"
+  },
+  {
+   "box_id": "RF1",
+   "face": "-x",
+   "type": "code128",
+   "width": 0.08,
+   "label_backing": true,
+   "aspect": 0.375,
+   "u": -0.05,
+   "v": 0.0,
+   "rot_deg": 0.0,
+   "content": "F4AMRF38K",
+   "content_id": "STK4F-0000-RF1-mx"
+  },
+  {
+   "box_id": "LF0",
+   "face": "-x",
+   "type": "code128",
+   "width": 0.08,
+   "label_backing": true,
+   "aspect": 0.375,
+   "u": 0.0,
+   "v": 0.14,
+   "rot_deg": 0.0,
+   "content": "F4ABLFFEB",
+   "content_id": "STK4F-0000-LF0-mx"
+  },
+  {
+   "box_id": "RB2",
+   "face": "+x",
+   "type": "code128",
+   "width": 0.08,
+   "label_backing": true,
+   "aspect": 0.375,
+   "u": 0.05,
+   "v": 0.14,
+   "rot_deg": 0.0,
+   "content": "F4CTRBPBS",
+   "content_id": "STK4F-0000-RB2-px"
+  },
+  {
+   "box_id": "LB1",
+   "face": "+x",
+   "type": "code128",
+   "width": 0.08,
+   "label_backing": true,
+   "aspect": 0.375,
+   "u": -0.02,
+   "v": 0.0,
+   "rot_deg": 0.0,
+   "content": "F4CMLBTNL",
+   "content_id": "STK4F-0000-LB1-px"
+  },
+  {
+   "box_id": "RB0",
+   "face": "+x",
+   "type": "code128",
+   "width": 0.08,
+   "label_backing": true,
+   "aspect": 0.375,
+   "u": -0.04,
+   "v": 0.14,
+   "rot_deg": 0.0,
+   "content": "F4CBRBVUZ",
+   "content_id": "STK4F-0000-RB0-px"
+  }
+ ],
+ "target": "all",
+ "task2_start": null,
+ "scan_faces": "all"
+}

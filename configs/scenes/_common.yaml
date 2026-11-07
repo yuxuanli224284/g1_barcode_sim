@@ -1,0 +1,25 @@
+# Shared by all scenes. Scene files may override any key.
+background:
+  kind: simple_warehouse            # simple_warehouse | geometry
+  usd: Environments/Simple_Warehouse/warehouse.usd   # relative to the Isaac asset root
+  offset: [0.0, 0.0, 0.0]           # translation of the warehouse so an open aisle is at the origin
+  yaw_deg: 0.0
+  geometry_fallback: {floor_size: 30.0, wall_height: 4.0, wall_color: [0.55, 0.55, 0.55]}
+lighting:
+  dome: {intensity: 3000.0, color: [0.75, 0.75, 0.75]}   # upstream wholebody scene values
+  distant: {intensity: 1000.0, angle_deg: [55.0, 0.0, 30.0], color: [1.0, 1.0, 1.0]}
+box_visual:
+  kind: asset                       # asset | geometry
+  usd: Environments/Simple_Warehouse/Props/SM_CardBoxD_04.usd
+  geometry_color: [0.65, 0.48, 0.30]   # kraft-paper colour for the fallback
+dynamic: false                      # boxes / furniture static colliders (true -> rigid bodies)
+robot_init: {pos: [0.0, 0.0], yaw: 0.0}
+topdown:                            # aux camera placed above the scene, looking straight down
+  center: [1.3, 0.0]
+  height: 3.5                       # with the aux camera's 60 deg hFOV this covers ~4 m along x
+views:                              # oblique overview renders (aux camera); eye = (topdown.center, 0) + eye_offset
+  target_z: 0.6                     # look-at point: (topdown.center, target_z)
+  list:
+    - {name: front_left, eye_offset: [-2.6, 2.6, 2.3], hfov: 70.0}
+    - {name: front_right, eye_offset: [-2.6, -2.6, 2.3], hfov: 70.0}
+    - {name: rear_left, eye_offset: [2.8, 2.6, 2.3], hfov: 70.0}

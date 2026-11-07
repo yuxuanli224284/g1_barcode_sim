@@ -1,0 +1,34 @@
+{
+ "suite": "t1_L1_box_appearance",
+ "base_suite": "t1_L1",
+ "version": 1,
+ "seed": 0,
+ "task": 1,
+ "level": "L1",
+ "count": 12,
+ "definition": {
+  "task": 1,
+  "level": "L1",
+  "factor": "box_appearance",
+  "n": 12
+ },
+ "rejections": {},
+ "warnings": [],
+ "skipped_infeasible": [],
+ "code_hash": "3283c1a58d0b88c1",
+ "head_camera_nominal": null,
+ "scenario_ids": [
+  "t1_L1_box_appearance_0000",
+  "t1_L1_box_appearance_0001",
+  "t1_L1_box_appearance_0002",
+  "t1_L1_box_appearance_0003",
+  "t1_L1_box_appearance_0004",
+  "t1_L1_box_appearance_0005",
+  "t1_L1_box_appearance_0006",
+  "t1_L1_box_appearance_0007",
+  "t1_L1_box_appearance_0008",
+  "t1_L1_box_appearance_0009",
+  "t1_L1_box_appearance_0010",
+  "t1_L1_box_appearance_0011"
+ ]
+}

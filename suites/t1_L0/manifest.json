@@ -1,0 +1,40 @@
+{
+ "suite": "t1_L0",
+ "base_suite": "t1_L0",
+ "version": 1,
+ "seed": 0,
+ "task": 1,
+ "level": "L0",
+ "count": 8,
+ "definition": {
+  "task": 1,
+  "level": "L0",
+  "grid": {
+   "dist_to_table": [
+    2.0,
+    3.0,
+    4.0,
+    5.0
+   ],
+   "target": [
+    "left",
+    "right"
+   ]
+  }
+ },
+ "rejections": {},
+ "warnings": [],
+ "skipped_infeasible": [],
+ "code_hash": "3283c1a58d0b88c1",
+ "head_camera_nominal": null,
+ "scenario_ids": [
+  "t1_L0_0000",
+  "t1_L0_0001",
+  "t1_L0_0002",
+  "t1_L0_0003",
+  "t1_L0_0004",
+  "t1_L0_0005",
+  "t1_L0_0006",
+  "t1_L0_0007"
+ ]
+}

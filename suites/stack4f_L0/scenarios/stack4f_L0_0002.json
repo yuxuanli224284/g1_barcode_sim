@@ -1,0 +1,331 @@
+{
+ "id": "stack4f_L0_0002",
+ "suite": "stack4f_L0",
+ "task": 3,
+ "seed": 0,
+ "index": 2,
+ "level": "L0",
+ "factors_varied": [
+  "robot_init"
+ ],
+ "factor": {
+  "note": "hand-written 2026-11-07: stack4f_L0_0000 (same stack, same 12 codes) with a start pose NOT parallel to the stack: robot 0.7 m to the left (beyond the +y side at 0.40), turned 35 deg right; the stack front stays inside the head image and the 3.0 m depth range. Base note: hand-written 2026-11-07: free-standing 2 columns (y = -0.20 / +0.20) x 2 deep (setback 0 / 0.40) x 3 rows of 0.40 x 0.40 x 0.38 m boxes on the floor (footprint x 1.30-2.10, y -0.40..0.40, top 1.14 m); 12 codes, 3 per vertical face (tour front -x, right -y, back +x, left +y), one per row alternating the face's two columns (top 1.07-1.10 m: arm raised; middle 0.57 m: squat; bottom 0.33 m: deep squat; raised from 0.30-0.32 m on 2026-11-07, 0.30 m was out of reach with the roll-aligned scanner); labels only on exposed faces"
+ },
+ "background": {
+  "type": "warehouse",
+  "light_scale": 1.0
+ },
+ "table": null,
+ "robot_init": {
+  "dist_to_table": 2.5,
+  "lateral_offset": 0.7,
+  "yaw_deg": -35.0
+ },
+ "boxes": [
+  {
+   "id": "LF0",
+   "size_wdh": [
+    0.4,
+    0.4,
+    0.38
+   ],
+   "appearance": "kraft",
+   "setback": 0.0,
+   "y_center": 0.2,
+   "on": null
+  },
+  {
+   "id": "LF1",
+   "size_wdh": [
+    0.4,
+    0.4,
+    0.38
+   ],
+   "appearance": "kraft",
+   "setback": 0.0,
+   "y_center": 0.2,
+   "on": "LF0"
+  },
+  {
+   "id": "LF2",
+   "size_wdh": [
+    0.4,
+    0.4,
+    0.38
+   ],
+   "appearance": "kraft",
+   "setback": 0.0,
+   "y_center": 0.2,
+   "on": "LF1"
+  },
+  {
+   "id": "LB0",
+   "size_wdh": [
+    0.4,
+    0.4,
+    0.38
+   ],
+   "appearance": "kraft",
+   "setback": 0.4,
+   "y_center": 0.2,
+   "on": null
+  },
+  {
+   "id": "LB1",
+   "size_wdh": [
+    0.4,
+    0.4,
+    0.38
+   ],
+   "appearance": "kraft",
+   "setback": 0.4,
+   "y_center": 0.2,
+   "on": "LB0"
+  },
+  {
+   "id": "LB2",
+   "size_wdh": [
+    0.4,
+    0.4,
+    0.38
+   ],
+   "appearance": "kraft",
+   "setback": 0.4,
+   "y_center": 0.2,
+   "on": "LB1"
+  },
+  {
+   "id": "RF0",
+   "size_wdh": [
+    0.4,
+    0.4,
+    0.38
+   ],
+   "appearance": "kraft",
+   "setback": 0.0,
+   "y_center": -0.2,
+   "on": null
+  },
+  {
+   "id": "RF1",
+   "size_wdh": [
+    0.4,
+    0.4,
+    0.38
+   ],
+   "appearance": "kraft",
+   "setback": 0.0,
+   "y_center": -0.2,
+   "on": "RF0"
+  },
+  {
+   "id": "RF2",
+   "size_wdh": [
+    0.4,
+    0.4,
+    0.38
+   ],
+   "appearance": "kraft",
+   "setback": 0.0,
+   "y_center": -0.2,
+   "on": "RF1"
+  },
+  {
+   "id": "RB0",
+   "size_wdh": [
+    0.4,
+    0.4,
+    0.38
+   ],
+   "appearance": "kraft",
+   "setback": 0.4,
+   "y_center": -0.2,
+   "on": null
+  },
+  {
+   "id": "RB1",
+   "size_wdh": [
+    0.4,
+    0.4,
+    0.38
+   ],
+   "appearance": "kraft",
+   "setback": 0.4,
+   "y_center": -0.2,
+   "on": "RB0"
+  },
+  {
+   "id": "RB2",
+   "size_wdh": [
+    0.4,
+    0.4,
+    0.38
+   ],
+   "appearance": "kraft",
+   "setback": 0.4,
+   "y_center": -0.2,
+   "on": "RB1"
+  }
+ ],
+ "barcodes": [
+  {
+   "box_id": "LF2",
+   "face": "-x",
+   "type": "code128",
+   "width": 0.08,
+   "label_backing": true,
+   "aspect": 0.375,
+   "u": 0.04,
+   "v": 0.15,
+   "rot_deg": 0.0,
+   "content": "F4ATLFRVG",
+   "content_id": "STK4F-0000-LF2-mx"
+  },
+  {
+   "box_id": "RF1",
+   "face": "-x",
+   "type": "code128",
+   "width": 0.08,
+   "label_backing": true,
+   "aspect": 0.375,
+   "u": -0.05,
+   "v": 0.0,
+   "rot_deg": 0.0,
+   "content": "F4AMRF38K",
+   "content_id": "STK4F-0000-RF1-mx"
+  },
+  {
+   "box_id": "LF0",
+   "face": "-x",
+   "type": "code128",
+   "width": 0.08,
+   "label_backing": true,
+   "aspect": 0.375,
+   "u": 0.0,
+   "v": 0.14,
+   "rot_deg": 0.0,
+   "content": "F4ABLFFEB",
+   "content_id": "STK4F-0000-LF0-mx"
+  },
+  {
+   "box_id": "RB2",
+   "face": "-y",
+   "type": "code128",
+   "width": 0.08,
+   "label_backing": true,
+   "aspect": 0.375,
+   "u": -0.03,
+   "v": 0.12,
+   "rot_deg": 0.0,
+   "content": "F4BTRB3UD",
+   "content_id": "STK4F-0000-RB2-my"
+  },
+  {
+   "box_id": "RF1",
+   "face": "-y",
+   "type": "code128",
+   "width": 0.08,
+   "label_backing": true,
+   "aspect": 0.375,
+   "u": 0.05,
+   "v": 0.0,
+   "rot_deg": 0.0,
+   "content": "F4BMRFQZT",
+   "content_id": "STK4F-0000-RF1-my"
+  },
+  {
+   "box_id": "RB0",
+   "face": "-y",
+   "type": "code128",
+   "width": 0.08,
+   "label_backing": true,
+   "aspect": 0.375,
+   "u": 0.02,
+   "v": 0.14,
+   "rot_deg": 0.0,
+   "content": "F4BBRBMGS",
+   "content_id": "STK4F-0000-RB0-my"
+  },
+  {
+   "box_id": "RB2",
+   "face": "+x",
+   "type": "code128",
+   "width": 0.08,
+   "label_backing": true,
+   "aspect": 0.375,
+   "u": 0.05,
+   "v": 0.14,
+   "rot_deg": 0.0,
+   "content": "F4CTRBPBS",
+   "content_id": "STK4F-0000-RB2-px"
+  },
+  {
+   "box_id": "LB1",
+   "face": "+x",
+   "type": "code128",
+   "width": 0.08,
+   "label_backing": true,
+   "aspect": 0.375,
+   "u": -0.02,
+   "v": 0.0,
+   "rot_deg": 0.0,
+   "content": "F4CMLBTNL",
+   "content_id": "STK4F-0000-LB1-px"
+  },
+  {
+   "box_id": "RB0",
+   "face": "+x",
+   "type": "code128",
+   "width": 0.08,
+   "label_backing": true,
+   "aspect": 0.375,
+   "u": -0.04,
+   "v": 0.14,
+   "rot_deg": 0.0,
+   "content": "F4CBRBVUZ",
+   "content_id": "STK4F-0000-RB0-px"
+  },
+  {
+   "box_id": "LF2",
+   "face": "+y",
+   "type": "code128",
+   "width": 0.08,
+   "label_backing": true,
+   "aspect": 0.375,
+   "u": -0.05,
+   "v": 0.13,
+   "rot_deg": 0.0,
+   "content": "F4DTLFFX2",
+   "content_id": "STK4F-0000-LF2-py"
+  },
+  {
+   "box_id": "LB1",
+   "face": "+y",
+   "type": "code128",
+   "width": 0.08,
+   "label_backing": true,
+   "aspect": 0.375,
+   "u": 0.03,
+   "v": 0.0,
+   "rot_deg": 0.0,
+   "content": "F4DMLBRMR",
+   "content_id": "STK4F-0000-LB1-py"
+  },
+  {
+   "box_id": "LF0",
+   "face": "+y",
+   "type": "code128",
+   "width": 0.08,
+   "label_backing": true,
+   "aspect": 0.375,
+   "u": 0.04,
+   "v": 0.14,
+   "rot_deg": 0.0,
+   "content": "F4DBLF8TF",
+   "content_id": "STK4F-0000-LF0-py"
+  }
+ ],
+ "target": "all",
+ "task2_start": null,
+ "scan_faces": "all"
+}

@@ -1,0 +1,40 @@
+{
+ "suite": "t2_L0",
+ "base_suite": "t2_L0",
+ "version": 1,
+ "seed": 0,
+ "task": 2,
+ "level": "L0",
+ "count": 8,
+ "definition": {
+  "task": 2,
+  "level": "L0",
+  "grid": {
+   "group_y": [
+    -0.15,
+    -0.05,
+    0.05,
+    0.15
+   ],
+   "target": [
+    "left",
+    "right"
+   ]
+  }
+ },
+ "rejections": {},
+ "warnings": [],
+ "skipped_infeasible": [],
+ "code_hash": "c05922f0ba4fb84e",
+ "head_camera_nominal": "configs/testsuite/head_camera_nominal.yaml",
+ "scenario_ids": [
+  "t2_L0_0000",
+  "t2_L0_0001",
+  "t2_L0_0002",
+  "t2_L0_0003",
+  "t2_L0_0004",
+  "t2_L0_0005",
+  "t2_L0_0006",
+  "t2_L0_0007"
+ ]
+}

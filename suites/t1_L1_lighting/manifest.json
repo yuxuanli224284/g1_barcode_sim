@@ -1,0 +1,32 @@
+{
+ "suite": "t1_L1_lighting",
+ "base_suite": "t1_L1",
+ "version": 1,
+ "seed": 0,
+ "task": 1,
+ "level": "L1",
+ "count": 10,
+ "definition": {
+  "task": 1,
+  "level": "L1",
+  "factor": "lighting",
+  "n": 10
+ },
+ "rejections": {},
+ "warnings": [],
+ "skipped_infeasible": [],
+ "code_hash": "3283c1a58d0b88c1",
+ "head_camera_nominal": null,
+ "scenario_ids": [
+  "t1_L1_lighting_0000",
+  "t1_L1_lighting_0001",
+  "t1_L1_lighting_0002",
+  "t1_L1_lighting_0003",
+  "t1_L1_lighting_0004",
+  "t1_L1_lighting_0005",
+  "t1_L1_lighting_0006",
+  "t1_L1_lighting_0007",
+  "t1_L1_lighting_0008",
+  "t1_L1_lighting_0009"
+ ]
+}

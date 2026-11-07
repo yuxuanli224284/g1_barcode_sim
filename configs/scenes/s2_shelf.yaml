@@ -1,0 +1,24 @@
+scene_id: 2
+name: s2_shelf
+furniture:
+  - id: SH01
+    kind: shelf
+    size: [0.60, 2.00, 2.00]
+    front_x: 2.00
+    center_y: 0.0
+    level_heights: [0.10, 0.55, 1.00, 1.45]   # top surface of each board
+    board_thickness: 0.03
+    post_size: 0.04
+    color: [0.20, 0.35, 0.60]
+    roughness: 0.7
+boxes:   # sizes 0.25-0.40 m, front 3 cm behind the board edge, lateral gaps >= 10 cm
+  - {id: B01, size: [0.30, 0.40, 0.30], place_on: {furniture: SH01, level: 0, y: -0.60, front_setback: 0.03}, barcodes: [{face: "-x"}]}
+  - {id: B02, size: [0.35, 0.35, 0.35], place_on: {furniture: SH01, level: 0, y: 0.00, front_setback: 0.03}, barcodes: [{face: "-x"}]}
+  - {id: B03, size: [0.25, 0.30, 0.25], place_on: {furniture: SH01, level: 0, y: 0.60, front_setback: 0.03}, barcodes: [{face: "-x"}]}
+  - {id: B04, size: [0.40, 0.40, 0.40], place_on: {furniture: SH01, level: 1, y: -0.45, front_setback: 0.03}, barcodes: [{face: "-x"}]}
+  - {id: B05, size: [0.30, 0.30, 0.25], place_on: {furniture: SH01, level: 1, y: 0.35, front_setback: 0.03}, barcodes: [{face: "-x"}]}
+  - {id: B06, size: [0.30, 0.35, 0.30], place_on: {furniture: SH01, level: 2, y: -0.50, front_setback: 0.03}, barcodes: [{face: "-x"}]}
+  - {id: B07, size: [0.25, 0.25, 0.25], place_on: {furniture: SH01, level: 2, y: 0.20, front_setback: 0.03}, barcodes: [{face: "-x"}]}
+  # distractors on the top board: barcode on +x (facing away from the robot)
+  - {id: B08, size: [0.30, 0.30, 0.30], place_on: {furniture: SH01, level: 3, y: -0.40, front_setback: 0.03}, barcodes: [{face: "+x"}], distractor: true}
+  - {id: B09, size: [0.30, 0.30, 0.30], place_on: {furniture: SH01, level: 3, y: 0.40, front_setback: 0.03}, barcodes: [{face: "+x"}], distractor: true}

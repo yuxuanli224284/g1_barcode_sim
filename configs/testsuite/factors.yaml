@@ -1,0 +1,108 @@
+# Test-suite generator: nominal values / ranges of every factor and the suite definitions.
+version: 1
+
+world:
+  # the table front-edge midpoint is on the x axis, front edge parallel to y, boxes face -x.
+  # The edge sits at x = table_front_x (same place as scene s1_table, where the warehouse aisle is open), the robot
+  # stands at x = table_front_x - dist_to_table.
+  table_front_x: 1.30
+
+robot_init:
+  dist_to_table: {nominal: 3.0, range: [2.0, 5.0]}
+  lateral_offset: {nominal: 0.0, range: [-1.5, 1.5]}
+  yaw_deg: {nominal: 0.0}        # fixed 0 in L0-L2
+
+box:                             # (w along y, h height, d along x)
+  w: {nominal: 0.40, range: [0.20, 0.60]}
+  h: {nominal: 0.30, range: [0.15, 0.50]}
+  d: {nominal: 0.30, range: [0.20, 0.50]}
+  appearance: {nominal: kraft, values: [kraft, kraft_tape, white_box, printed]}
+
+table:
+  depth: {nominal: 0.60, range: [0.50, 0.80]}
+  width: {nominal: 1.20, range: [1.00, 1.80]}
+  height: {nominal: 0.75, range: [0.70, 0.80]}
+  appearance: white_matte        # fixed in L0-L2
+  top_thickness: 0.03            # geometry of the white table (same as s1_table)
+  leg_size: 0.05
+
+placement:
+  setback: {nominal: 0.05, range: [0.0, 0.20]}
+  gap: {nominal: 0.10, range: [0.05, 0.60]}
+  group_y: {nominal: 0.0}        # sampled uniformly over the positions that keep both boxes on the table
+
+barcode:
+  u: {nominal: 0.0}              # uniform over the face width minus the label extent and the margin
+  v: {nominal: 0.0}
+  rot_base_deg: {nominal: 0.0, values: [0.0, 90.0]}
+  rot_jitter_deg: 10.0           # +- uniform around the base rotation
+  margin: 0.01                   # label (incl. backing) stays >= 1 cm inside the face
+  type: {nominal: code128, values: [code128, qr]}
+  width: {nominal: 0.08, range: [0.04, 0.12]}          # code128 pattern width
+  qr_side: {nominal: 0.05, range: [0.03, 0.08]}        # qr pattern side
+  aspect: {nominal: 0.375, range: [0.25, 0.60]}        # code128 pattern height / width
+  content_length: {nominal: 9, range: [6, 20]}
+  backing: {nominal: true, values: [true, false]}
+  backing_border: 0.01           # white backing is 1 cm larger than the pattern on every side
+  face_offset: 0.0015            # label 1.5 mm in front of the box face (as configs/barcode.yaml)
+  texture_px_per_module: 4       # label textures are drawn at an integer 4 px per module (crisp bars, exact symbol size)
+  max_center_height: 1.3
+  content_alphabet: "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"   # unambiguous upper-case + digits
+
+appearance:                      # box looks (colours in g1_barcode_sim/testsuite/textures.py)
+  tape_width: 0.05               # packing tape stripe along the top seam ...
+  tape_drop: 0.06                # ... folding 6 cm down the front face
+  tape_roughness: 0.4
+  # "cardbox": the shipping-box art asset of the s1-s3 scenes (configs/scenes/_common.yaml box_visual.usd; kraft with
+  # packing tape and printed shipping stickers), scaled to the box size; relative to the Isaac asset root
+  cardbox_usd: Environments/Simple_Warehouse/Props/SM_CardBoxD_04.usd
+
+background:
+  type: {nominal: warehouse, values: [warehouse, none, white]}
+  light_scale: {nominal: 1.0, range: [0.7, 1.3]}        # L1 lighting sweep +-30 %
+
+target: {values: [left, right]}  # robot's view: left = +y
+
+task2_start:
+  d_obs_range: [0.60, 1.00]
+  d_obs_step: 0.05
+  fov_margin_frac: 0.05          # face corners inside the head image with a 5 % border
+  noise: {pos: 0.03, yaw_deg: 3.0}                 # uniform +- (L0: none, start_noise factor scales it up)
+  noise_max: {pos: 0.08, yaw_deg: 8.0}
+  box_lateral_range: [-0.40, 0.40]                 # candidate root lateral offsets; kept only if everything is visible
+  wrist_offset: 0.20             # task2_gt_wrist_target = barcode centre + 0.20 * normal
+
+validity:
+  robot_footprint_radius: 0.35   # m; robot vs table / boxes clearance at the initial pose
+  max_resample: 50
+
+head_camera_nominal: configs/testsuite/head_camera_nominal.yaml   # measured by scripts/testsuite/measure_head_camera.py
+
+suites:                          # counts: L0 per spec; L1 sweeps 10-20 per factor; L2 100
+  t1_L0: {task: 1, level: L0, grid: {dist_to_table: [2.0, 3.0, 4.0, 5.0], target: [left, right]}}
+  t1_L1:
+    task: 1
+    level: L1
+    factors:
+      robot_dist: {n: 12}
+      robot_lateral: {n: 13}
+      box_shape: {n: 12}
+      box_appearance: {n: 12}     # 4 appearances x 3
+      placement: {n: 12}          # setback, gap, group_y swept in turn (4 values each)
+      barcode_size: {n: 10}
+      background: {n: 12}         # 3 backgrounds x 4
+      lighting: {n: 10}
+  t1_L2: {task: 1, level: L2, num: 100}
+  t2_L0: {task: 2, level: L0, grid: {group_y: [-0.15, -0.05, 0.05, 0.15], target: [left, right]}}   # |group_y| <= (1.20 - 0.90)/2 with nominal boxes
+  t2_L1:
+    task: 2
+    level: L1
+    factors:
+      barcode_pos: {n: 12}        # 4 u x 3 v over the allowed in-face range
+      barcode_size: {n: 10}
+      barcode_type: {n: 12}       # {code128, qr} x {backing, no backing} x 3
+      box_shape: {n: 12}
+      box_lateral: {n: 12}
+      start_noise: {n: 12}
+      background: {n: 12}
+  t2_L2: {task: 2, level: L2, num: 100}
