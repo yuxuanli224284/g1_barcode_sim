@@ -1,0 +1,40 @@
+/* Image grids used on the scene and task-suite pages. */
+
+/* A wide third-person view next to a 4:3 head-camera view. */
+.figpair {
+  display: grid;
+  grid-template-columns: minmax(0, 16fr) minmax(0, 9fr);
+  gap: 12px;
+  align-items: start;
+  margin: 0.4rem 0 1.3rem;
+}
+
+/* One card per task suite. */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+  margin: 0.5rem 0 1.4rem;
+}
+
+.figpair figure,
+.cards figure {
+  margin: 0;
+}
+
+.figpair img,
+.cards img {
+  width: 100%;
+  height: auto;
+}
+
+.cards figcaption {
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+@media (max-width: 560px) {
+  .figpair {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

@@ -32,7 +32,7 @@
 
 ## 安装（概要）
 
-完整步骤、版本表和常见问题见 [详细文档 · 环境配置](docs/index.html#install)。
+完整步骤、版本表和常见问题见 [详细文档 · 环境配置](docs/installation.md)。
 
 ```bash
 # 1) Python 3.11 环境
@@ -88,7 +88,7 @@ print(res["status"], res["content"])
 env.close()
 ```
 
-更多 API（行走、下蹲、手腕 / 扫码枪瞄准、夹爪、辅助相机渲染）见 [详细文档 · Python API](docs/index.html#api)。
+更多 API（行走、下蹲、手腕 / 扫码枪瞄准、夹爪、辅助相机渲染）见 [详细文档 · Python API](docs/api.md)。
 
 ## 场景
 
@@ -98,7 +98,7 @@ env.close()
 | 桌面 suite | `t1_L0`、`t1_L1_*`、`t1_L2`，`t2_L0`、`t2_L1_*`、`t2_L2` | 桌上两个箱子；L0 标称、L1 单因素变化、L2 多因素随机 |
 | 箱堆 suite | `stack3_L0`、`stack9_L0`、`stack9p_L0`、`stack9c_L0`、`stack4f_L0`、`stack4c_L0` | 地面箱堆：单面 / 四面贴码，多种纸箱外观 |
 
-每个场景的图片和使用方法见 [详细文档 · 场景](docs/index.html#scenes) 与 [Task suites](docs/index.html#suites)。task suite 会持续更新。
+每个场景的图片和使用方法见 [详细文档 · 场景](docs/scenes.md) 与 [Task suites](docs/task_suites.md)。task suite 会持续更新。
 
 ## 目录结构
 
@@ -110,7 +110,7 @@ suites/                测试场景集（每个 suite：manifest.json + scenario
 examples/              最小示例（走到条码前、瞄准并扫码）
 tests/                 CPU 单元测试
 assets/gear_wbc/       GR00T WBC 策略（ONNX）及其许可证
-docs/                  详细文档网页与图片
+docs/                  详细文档（Sphinx + MyST Markdown，由 GitHub Actions 构建）
 ```
 
 ## 许可证与致谢
