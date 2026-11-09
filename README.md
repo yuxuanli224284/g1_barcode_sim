@@ -10,7 +10,7 @@
 
 <sub>均为机器人左后方视角。</sub>
 
-**详细文档**（环境配置、实现细节、每个场景和 task suite 的说明）：<https://yuxuanli224284.github.io/g1_barcode_sim/>（源文件在 [`docs/`](docs/) 目录，Sphinx）。
+**详细文档**（环境配置、实现细节、每个场景和 task suite 的说明）：<https://yuxuanli224284.github.io/g1_docs/barcode_sim/>（源文件在 [`docs/`](docs/) 目录，Sphinx）。
 
 ## 主要内容
 

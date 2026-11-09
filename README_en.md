@@ -10,7 +10,7 @@ A simulation environment built on Isaac Sim 5.1 / Isaac Lab: a Unitree G1 humano
 
 <sub>All views are from behind the robot's left shoulder.</sub>
 
-**Documentation** (installation, implementation details, every scene and task suite): <https://yuxuanli224284.github.io/g1_barcode_sim/en/> (sources in [`docs/en/`](docs/en/), Sphinx).
+**Documentation** (installation, implementation details, every scene and task suite): <https://yuxuanli224284.github.io/g1_docs/barcode_sim/en/> (sources in [`docs/en/`](docs/en/), Sphinx).
 
 ## Features
 

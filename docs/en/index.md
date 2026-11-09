@@ -4,7 +4,7 @@
 
 A warehouse barcode-scanning simulation environment for the G1 humanoid. The robot holds a handheld barcode scanner in its left hand, searches for barcode labels on cardboard boxes placed on tables, on shelves or in stacks on the floor, walks up to them, aims and scans. This documentation covers installation, implementation details, the Python API, the built-in scenes and the task suites.
 
-[中文](https://yuxuanli224284.github.io/g1_barcode_sim/) | English
+[中文](https://yuxuanli224284.github.io/g1_docs/barcode_sim/) | English
 
 ```{figure} ../images/scene_s1_table_left_rear.jpg
 :alt: The s1_table scene: a white table on a warehouse floor with two cardboard boxes on it; the G1 robot stands in front of the table, holding a yellow-and-black barcode scanner in its left hand

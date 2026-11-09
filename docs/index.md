@@ -4,7 +4,7 @@
 
 G1 人形机器人仓库扫码仿真环境：左手握一把手持扫码枪，在桌面、货架和地面箱堆上寻找纸箱的条码标签，走过去、对准并扫码。本文档介绍安装、实现细节、Python API、内置场景和测试场景集。
 
-中文 | [English](https://yuxuanli224284.github.io/g1_barcode_sim/en/)
+中文 | [English](https://yuxuanli224284.github.io/g1_docs/barcode_sim/en/)
 
 ```{figure} images/scene_s1_table_left_rear.jpg
 :alt: s1_table 场景：仓库地面上一张白桌，桌上两个纸箱，G1 机器人站在桌前，左手握着黄黑色扫码枪

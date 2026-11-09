@@ -28,13 +28,12 @@ html_title = "g1_barcode_sim documentation"
 html_static_path = ["../_static"]
 html_css_files = ["custom.css"]
 html_theme_options = {
-    "repository_url": "https://github.com/yuxuanli224284/g1_barcode_sim",
-    "use_repository_button": True,
+    "use_repository_button": False,
     "show_toc_level": 2,
     # language button next to the repository button (top right of every page)
-    "icon_links": [{"name": "中文", "url": "https://yuxuanli224284.github.io/g1_barcode_sim/", "icon": "fa-solid fa-language", "type": "fontawesome"}],
+    "icon_links": [{"name": "中文", "url": "https://yuxuanli224284.github.io/g1_docs/barcode_sim/", "icon": "fa-solid fa-language", "type": "fontawesome"}],
     # Language switch shown in the header of every page.
     "announcement": (
-        '<a href="https://yuxuanli224284.github.io/g1_barcode_sim/">中文</a> | English'
+        '<a href="https://yuxuanli224284.github.io/g1_docs/barcode_sim/">中文</a> | English'
     ),
 }
