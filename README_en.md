@@ -2,7 +2,7 @@
 
 [中文](README.md) | English
 
-A simulation environment built on Isaac Sim 5.1 / Isaac Lab: a Unitree G1 humanoid holds a handheld barcode scanner in its left hand, searches a warehouse for barcode labels on cardboard boxes (on tables, on shelves, in stacks on the floor), walks up to them, aims and scans. The environment provides a head RGB-D camera, a scanner camera, whole-body locomotion control, arm IK, scan evaluation based on image decoding, complete ground truth, and reproducible test scenario sets (task suites).
+A simulation environment built on Isaac Sim 5.1 / Isaac Lab: a Unitree G1 humanoid holds a handheld barcode scanner in its left hand, searches a warehouse for barcode labels on cardboard boxes (on tables, on shelves, in stacks on the floor), walks up to them, aims and scans. The environment provides a head camera (by default modelled on the real Intel D435i: a colour camera plus an infrared stereo pair with a dot projector), a scanner camera, whole-body locomotion control, arm IK, scan evaluation based on image decoding, complete ground truth, and reproducible test scenario sets (task suites).
 
 | Table scene | Shelf scene | Floor stack (labels on four faces) |
 |:---:|:---:|:---:|
@@ -19,7 +19,7 @@ A simulation environment built on Isaac Sim 5.1 / Isaac Lab: a Unitree G1 humano
 | Robot | Unitree G1 (29-DoF whole body) + Dex1 two-finger grippers; the left hand permanently holds the scanner, the right gripper can open and close |
 | Whole-body control | NVIDIA GR00T Decoupled WBC by default (two ONNX policies, Balance / Walk, controlling the legs and waist, with a squat height command); the upstream unitree locomotion policy is available as an alternative |
 | Arms | IK-based wrist position and scanner aiming control (`aim_scanner`, `aim_scanner_at`) |
-| Cameras | Head RGB-D camera; scanner camera at the scanner head; off-robot auxiliary cameras (top-down and oblique renders) |
+| Cameras | Two head-camera models (`model` in `configs/camera_head.yaml`): `d435i` (default, real parameters: colour 848×480 / 69°, infrared stereo pair 848×480 / 87° with a 50 mm baseline and a dot projector; depth comes from the user's own stereo matching on the infrared images, the render depth is for evaluation only) or `upstream` (unitree's upstream single 105° camera + render depth); scanner camera at the scanner head; off-robot auxiliary cameras (top-down and oblique renders) |
 | Scanning | Pulling the trigger decodes the scanner camera image (pyzbar) and returns the code closest to the image center; a GT diagnostic based on ray geometry is also provided |
 | Barcodes | Code128 / QR, generated procedurally and verified by decoding each one; labels with a white backing can be placed on any exposed side face of a box, several per face |
 | Scenes | 3 built-in scenes (table / shelf / box stack) + task suites: table scenarios (t1_*, t2_*) and stack scenarios (stack*) |
@@ -78,7 +78,8 @@ from g1_barcode_sim.env import G1BarcodeEnv
 
 env = G1BarcodeEnv("scenario", headless=True, seed=0)   # task-suite mode
 obs = env.reset(scenario="t2_L0_0000")                  # scenario id, JSON path or dict
-print(obs["rgb"].shape, obs["depth"].shape)             # head camera RGB-D
+print(obs["rgb"].shape, obs["depth"].shape)             # head colour image; depth = render depth (evaluation)
+st = env.head_stereo_obs()                               # D435i: infrared pair + calibration (None for upstream)
 
 gt = env.get_ground_truth()                              # evaluation only: box and barcode poses, etc.
 r = env.move_relative(0.5, 0.0, 0.0)                     # odometry-based relative motion (dx, dy, dyaw)
@@ -97,6 +98,7 @@ More of the API (walking, squatting, wrist / scanner aiming, gripper, auxiliary 
 | Built-in scenes | `s1_table`, `s2_shelf`, `s3_stack` | Table, shelf, floor stack; open with `G1BarcodeEnv("<name>")` |
 | Table suites | `t1_L0`, `t1_L1_*`, `t1_L2`, `t2_L0`, `t2_L1_*`, `t2_L2` | Two boxes on a table; L0 nominal, L1 single-factor variation, L2 multi-factor randomization |
 | Stack suites | `stack3_L0`, `stack9_L0`, `stack9p_L0`, `stack9c_L0`, `stack4f_L0`, `stack4c_L0` | Box stacks on the floor: labels on one face / four faces, several box appearances |
+| Box-wall suite | `wall6x5_L0` | A 6 × 5 wall of plain boxes (1.20 m wide, 1.25 m tall), one label in the top-left corner of each front face, 30 in all |
 
 Images and usage of every scene are in [Documentation · Scenes](docs/en/scenes.md) and [Task suites](docs/en/task_suites.md). The task suites will keep being updated.
 
@@ -110,8 +112,16 @@ suites/                Task suites (per suite: manifest.json + scenarios/*.json)
 examples/              Minimal examples (walk up to a barcode, aim and scan)
 tests/                 CPU unit tests
 assets/gear_wbc/       GR00T WBC policies (ONNX) and their license
-docs/                  Documentation (Sphinx + MyST Markdown, built by GitHub Actions; English in docs/en/)
+docs/                  Documentation (Sphinx + MyST Markdown, built and published to the documentation site; English in docs/en/)
 ```
+
+## Versions and branches
+
+| Version | Where | Notes |
+|---|---|---|
+| D435i head camera (current) | `main` | `camera_head.yaml` defaults to `model: d435i`; set `upstream` for the previous single camera |
+| Original G1 | tag `g1-v1-upstream-cam` | The complete version before the D435i change (single 105° camera + render depth): `git checkout g1-v1-upstream-cam` |
+| T800 Pro (work in progress) | branch `t800` | EngineAI T800 Pro (`robot.model: g1 \| t800`), based on `main` before the D435i change, not merged yet |
 
 ## License and acknowledgements
 

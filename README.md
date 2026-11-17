@@ -2,7 +2,7 @@
 
 中文 | [English](README_en.md)
 
-基于 Isaac Sim 5.1 / Isaac Lab 的仿真环境：Unitree G1 人形机器人左手夹持一把手持扫码枪，在仓库里寻找纸箱（桌面、货架、地面箱堆）上的条码标签，走过去、对准并扫码。环境提供头部 RGB-D 相机、枪头相机、全身行走控制、手臂 IK、基于图像解码的扫码判定和完整的 ground truth，以及可复现的测试场景集（task suites）。
+基于 Isaac Sim 5.1 / Isaac Lab 的仿真环境：Unitree G1 人形机器人左手夹持一把手持扫码枪，在仓库里寻找纸箱（桌面、货架、地面箱堆）上的条码标签，走过去、对准并扫码。环境提供头部相机（默认按真机 Intel D435i 建模：彩色相机 + 带散斑投射器的红外双目）、枪头相机、全身行走控制、手臂 IK、基于图像解码的扫码判定和完整的 ground truth，以及可复现的测试场景集（task suites）。
 
 | 桌面场景 | 货架场景 | 地面箱堆（四面贴码） |
 |:---:|:---:|:---:|
@@ -19,7 +19,7 @@
 | 机器人 | Unitree G1（29 自由度全身）+ Dex1 二指夹爪，左手固定夹持扫码枪，右手夹爪可开合 |
 | 全身控制 | 默认 NVIDIA GR00T Decoupled WBC（Balance / Walk 两个 ONNX 策略，控制腿和腰，支持下蹲高度命令）；可切换为 unitree 上游行走策略 |
 | 手臂 | 基于 IK 的手腕位置 / 扫码枪瞄准控制（`aim_scanner`、`aim_scanner_at`） |
-| 相机 | 头部 RGB-D 相机；扫码枪枪头相机；离机辅助相机（俯视、斜视角渲染） |
+| 相机 | 头部相机两种型号可选（`configs/camera_head.yaml` 的 `model`）：`d435i`（默认，真机参数：彩色 848×480 / 69°，红外双目 848×480 / 87°、基线 50 mm，带散斑投射器；深度由使用方对红外图做立体匹配得到，渲染深度只用于评测）或 `upstream`（unitree 上游的单目 105° 相机 + 渲染深度）；扫码枪枪头相机；离机辅助相机（俯视、斜视角渲染） |
 | 扫码 | 扣扳机时对枪头相机画面做条码解码（pyzbar），返回离画面中心最近的码；另给出射线几何的 GT 诊断 |
 | 条码 | Code128 / QR，程序生成并逐张解码校验；带白底标签，可贴在箱子任意外露侧面，一个面可贴多个 |
 | 场景 | 3 个内置场景（桌面 / 货架 / 箱堆）+ 测试场景集：桌面场景（t1_*、t2_*）与箱堆场景（stack*） |
@@ -78,7 +78,8 @@ from g1_barcode_sim.env import G1BarcodeEnv
 
 env = G1BarcodeEnv("scenario", headless=True, seed=0)   # 测试场景模式
 obs = env.reset(scenario="t2_L0_0000")                  # 场景 id、JSON 路径或 dict
-print(obs["rgb"].shape, obs["depth"].shape)             # 头部相机 RGB-D
+print(obs["rgb"].shape, obs["depth"].shape)             # 头部彩色图；depth 为渲染深度（评测用）
+st = env.head_stereo_obs()                               # D435i：左右红外图与标定（upstream 相机为 None）
 
 gt = env.get_ground_truth()                              # 仅供评测：箱子、条码位姿等
 r = env.move_relative(0.5, 0.0, 0.0)                     # 基于里程计的相对移动 (dx, dy, dyaw)
@@ -97,6 +98,7 @@ env.close()
 | 内置场景 | `s1_table`、`s2_shelf`、`s3_stack` | 桌面、货架、地面箱堆，用 `G1BarcodeEnv("<name>")` 打开 |
 | 桌面 suite | `t1_L0`、`t1_L1_*`、`t1_L2`，`t2_L0`、`t2_L1_*`、`t2_L2` | 桌上两个箱子；L0 标称、L1 单因素变化、L2 多因素随机 |
 | 箱堆 suite | `stack3_L0`、`stack9_L0`、`stack9p_L0`、`stack9c_L0`、`stack4f_L0`、`stack4c_L0` | 地面箱堆：单面 / 四面贴码，多种纸箱外观 |
+| 箱墙 suite | `wall6x5_L0` | 6 列 × 5 层纯色纸箱墙（宽 1.20 m、高 1.25 m），每箱正面左上角一个码，共 30 个 |
 
 每个场景的图片和使用方法见 [详细文档 · 场景](docs/scenes.md) 与 [Task suites](docs/task_suites.md)。task suite 会持续更新。
 
@@ -110,8 +112,16 @@ suites/                测试场景集（每个 suite：manifest.json + scenario
 examples/              最小示例（走到条码前、瞄准并扫码）
 tests/                 CPU 单元测试
 assets/gear_wbc/       GR00T WBC 策略（ONNX）及其许可证
-docs/                  详细文档（Sphinx + MyST Markdown，由 GitHub Actions 构建）
+docs/                  详细文档（Sphinx + MyST Markdown，构建后发布到文档网站）
 ```
+
+## 版本与分支
+
+| 版本 | 位置 | 说明 |
+|---|---|---|
+| D435i 头部相机（当前） | `main` | `camera_head.yaml` 默认 `model: d435i`；改成 `upstream` 即回到原来的单目相机 |
+| 原版 G1 | 标签 `g1-v1-upstream-cam` | D435i 改动之前的完整版本（单目 105° 相机 + 渲染深度），`git checkout g1-v1-upstream-cam` |
+| T800 Pro（未完成） | 分支 `t800` | EngineAI T800 Pro 接入（`robot.model: g1 \| t800`），基于 D435i 改动之前的 `main`，尚未合并 |
 
 ## 许可证与致谢
 
