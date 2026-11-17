@@ -4,11 +4,18 @@ python scripts/testsuite/generate.py --suite t1_L0
 python scripts/testsuite/generate.py --suite t1_L1 --factor background
 python scripts/testsuite/generate.py --suite t1_L2 --num 100 --seed 0
 python scripts/testsuite/generate.py --suite all
+python scripts/testsuite/generate.py --suite t2_L0 --robot t800   # -> suites/t2_L0_t800 (T800 head camera)
 
 Writes suites/<suite>/{manifest.json, generation_log.json, scenarios/<id>.json}. Every suite is generated twice in
 memory and must come out byte-identical (else error). manifest.json is deterministic (no timestamp); the time
 goes to generation_log.json. Pure Python: no simulator needed (task-2 suites read the measured head-camera
 parameters from configs/testsuite/head_camera_nominal.yaml).
+
+--robot t800 (default g1 = the behaviour above): factors from testsuite.load_factors("t800") (factors_t800.yaml: the
+T800 head camera configs/testsuite/head_camera_nominal_t800.yaml and its observation-distance range). The suite is
+written as <suite>_t800 (scenario ids <suite>_t800_NNNN, each with "robot": "t800"); its scenes are drawn from the RNG of
+<suite> (same boxes / labels / contents as the G1 suite), only the robot-dependent parts (task-2 start pose, obs
+distance) follow the T800 camera.
 """
 import argparse
 import hashlib
@@ -22,7 +29,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 sys.path.insert(0, ROOT)
 import yaml  # noqa: E402
 
-from g1_barcode_sim.testsuite import SUITES_DIR, load_factors  # noqa: E402
+from g1_barcode_sim.testsuite import ROBOT_FACTOR_FILES, SUITES_DIR, load_factors  # noqa: E402
 from g1_barcode_sim.testsuite import geometry as G  # noqa: E402
 from g1_barcode_sim.testsuite.sampler import expand_suite_names, generate  # noqa: E402
 
@@ -47,16 +54,20 @@ def main():
     ap.add_argument("--factor", default=None, help="L1 only: generate just this factor")
     ap.add_argument("--num", type=int, default=None, help="L2 only: number of scenarios (default from factors.yaml)")
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--robot", choices=("g1", "t800"), default="g1",
+                    help="robot whose head camera / observation range the suite uses (t800: suites named <suite>_t800)")
     args = ap.parse_args()
-    F = load_factors()
+    F = load_factors(args.robot)
+    suffix = "" if args.robot == "g1" else f"_{args.robot}"
     cam_path = os.path.join(ROOT, F["head_camera_nominal"])
     cam = G.head_camera(yaml.safe_load(open(cam_path))) if os.path.exists(cam_path) else None
     names = list(F["suites"]) if args.suite == "all" else [args.suite]
     all_contents = {}
     for name in names:
-        for full, d in expand_suite_names(F, name, args.factor):
+        for base_full, d in expand_suite_names(F, name, args.factor):
+            full = base_full + suffix                      # G1: the name itself
             t0 = time.time()
-            runs = [generate(F, cam, full, d, args.seed, args.num) for _ in range(2)]
+            runs = [generate(F, cam, full, d, args.seed, args.num, rng_name=base_full) for _ in range(2)]
             blobs = [[dumps(sc) for sc in r[0]] for r in runs]
             if blobs[0] != blobs[1] or runs[0][1:] != runs[1][1:]:
                 raise RuntimeError(f"{full}: two generations differ (RNG not fully seeded)")
@@ -75,9 +86,12 @@ def main():
             manifest = {"suite": full, "base_suite": name, "version": F["version"], "seed": args.seed, "task": d["task"],
                         "level": d["level"], "count": len(scs), "definition": {k: v for k, v in d.items() if k != "factors"},
                         "rejections": dict(sorted(reasons.items())), "warnings": warnings, "skipped_infeasible": skipped,
-                        "code_hash": code_hash([F["head_camera_nominal"]] if d["task"] == 2 else []),
+                        "code_hash": code_hash(([F["head_camera_nominal"]] if d["task"] == 2 else [])
+                                               + ([] if args.robot == "g1" else [os.path.relpath(ROBOT_FACTOR_FILES[args.robot], ROOT)])),
                         "head_camera_nominal": F["head_camera_nominal"] if d["task"] == 2 else None,
                         "scenario_ids": [sc["id"] for sc in scs]}
+            if args.robot != "g1":
+                manifest["robot"] = args.robot
             open(os.path.join(out, "manifest.json"), "w").write(dumps(manifest))
             open(os.path.join(out, "generation_log.json"), "w").write(dumps(
                 {"generated_at": time.strftime("%Y-%m-%dT%H:%M:%S%z"), "seconds": round(time.time() - t0, 2),

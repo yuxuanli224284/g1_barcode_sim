@@ -237,6 +237,8 @@ def realize(spec, F, cam, suite, idx, seed, task, level, factors_varied, factor_
           "robot_init": {"dist_to_table": round(spec["robot"]["dist"], 4), "lateral_offset": round(spec["robot"]["lateral"], 4),
                          "yaw_deg": round(spec["robot"]["yaw_deg"], 3)},
           "boxes": boxes, "barcodes": codes, "target": spec["target"], "task2_start": None}
+    if "robot" in F:              # non-G1 factors (load_factors(robot)): the robot whose head camera the scenario uses
+        sc["robot"] = F["robot"]
     lay = to_layout(sc, F)
     rr = F["validity"]["robot_footprint_radius"]
     obstacles = [(np.array([p["center"][0] - p["size"][0] / 2, p["center"][1] - p["size"][1] / 2]),
@@ -312,8 +314,10 @@ def expand_suite_names(F: dict, name: str, factor: str | None = None) -> list[tu
     return [(f"{name}_{f}", dict(d, factor=f, n=d["factors"][f]["n"])) for f in facs]
 
 
-def generate(F: dict, cam, full_name: str, d: dict, seed: int, num: int | None = None):
-    """Returns (scenarios, rejection counts, warnings, skipped infeasible L1 sweep points)."""
+def generate(F: dict, cam, full_name: str, d: dict, seed: int, num: int | None = None, rng_name: str | None = None):
+    """Returns (scenarios, rejection counts, warnings, skipped infeasible L1 sweep points). rng_name: name the scenario
+    RNG is keyed on (default full_name); a robot variant of a suite (generate.py --robot) passes the base suite name so
+    it draws the same scenes as that suite."""
     task, level = d["task"], d["level"]
     reasons, warnings, used = {}, [], set()
     items = []
@@ -330,7 +334,7 @@ def generate(F: dict, cam, full_name: str, d: dict, seed: int, num: int | None =
     for idx, (kind, arg) in enumerate(items):
         reasons_this = []
         for attempt in range(F["validity"]["max_resample"]):
-            rng = rng_for(full_name, seed, idx, attempt)
+            rng = rng_for(full_name if rng_name is None else rng_name, seed, idx, attempt)
             spec = nominal_spec(F)
             spec["t2"]["noise_on"] = level != "L0"
             factor_info, varied = None, []

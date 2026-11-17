@@ -2,15 +2,22 @@
 configs/testsuite/head_camera_nominal.yaml, used by the generator for task-2 start poses / visibility checks and by
 the evaluation channel for task1_gt_obs_pose. Averaged over 2 s of standing (the head sways slightly).
 
-python scripts/testsuite/measure_head_camera.py
+python scripts/testsuite/measure_head_camera.py                # G1 -> configs/testsuite/head_camera_nominal.yaml
+python scripts/testsuite/measure_head_camera.py --robot t800   # T800 (robot_t800.yaml head_camera mount) ->
+                                                               # configs/testsuite/head_camera_nominal_t800.yaml
 """
-import os, sys
+import argparse, os, sys
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, ROOT)
+ap = argparse.ArgumentParser()
+ap.add_argument("--robot", choices=("g1", "t800"), default="g1")
+args = ap.parse_args()
 import numpy as np
 from g1_barcode_sim.env import G1BarcodeEnv
 
-env = G1BarcodeEnv("s1_table", headless=True, seed=0)
+# G1: no override (exactly the original call); T800: robot selected per run (config.load_robot_cfg)
+env = G1BarcodeEnv("s1_table", headless=True, seed=0,
+                   config_overrides=None if args.robot == "g1" else {"robot": {"model": args.robot}})
 try:
     import yaml
     from g1_barcode_sim.camera import R_to_quat_wxyz, quat_wxyz_to_R
@@ -30,7 +37,14 @@ try:
            "width": int(o["rgb"].shape[1]), "height": int(o["rgb"].shape[0]), "K": np.round(o["K"], 4).tolist(),
            "T_root_cam": np.round(T, 5).tolist(), "root_height": round(float(np.mean(zs)), 4),
            "sway_std_m": round(float(Ts[:, :3, 3].std(axis=0).max()), 5)}
-    p = os.path.join(ROOT, "configs", "testsuite", "head_camera_nominal.yaml")
+    name = "head_camera_nominal.yaml"
+    if args.robot != "g1":
+        name = f"head_camera_nominal_{args.robot}.yaml"
+        out["source"] += f"; robot {args.robot}, root = {env.body_names[0]}, root_height = its world z"
+        out["robot"] = args.robot
+        out["mount"] = env.cfg["camera"]["mount"]
+        out["mount_check"] = env.head_camera_check
+    p = os.path.join(ROOT, "configs", "testsuite", name)
     yaml.safe_dump(out, open(p, "w"), sort_keys=False)
     print("WROTE", p, out, flush=True)
 except BaseException:

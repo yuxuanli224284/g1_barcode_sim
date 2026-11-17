@@ -1,0 +1,41 @@
+{
+ "suite": "t2_L0_t800",
+ "base_suite": "t2_L0",
+ "version": 1,
+ "seed": 0,
+ "task": 2,
+ "level": "L0",
+ "count": 8,
+ "definition": {
+  "task": 2,
+  "level": "L0",
+  "grid": {
+   "group_y": [
+    -0.15,
+    -0.05,
+    0.05,
+    0.15
+   ],
+   "target": [
+    "left",
+    "right"
+   ]
+  }
+ },
+ "rejections": {},
+ "warnings": [],
+ "skipped_infeasible": [],
+ "code_hash": "22a09ecbd7168e9c",
+ "head_camera_nominal": "configs/testsuite/head_camera_nominal_t800.yaml",
+ "scenario_ids": [
+  "t2_L0_t800_0000",
+  "t2_L0_t800_0001",
+  "t2_L0_t800_0002",
+  "t2_L0_t800_0003",
+  "t2_L0_t800_0004",
+  "t2_L0_t800_0005",
+  "t2_L0_t800_0006",
+  "t2_L0_t800_0007"
+ ],
+ "robot": "t800"
+}

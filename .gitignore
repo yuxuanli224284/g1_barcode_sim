@@ -22,3 +22,6 @@ scripts/controller_compare/
 .env
 .vscode/
 .idea/
+
+# T800 experiment outputs (images, logs; regenerable by the t800/ scripts)
+t800/out/

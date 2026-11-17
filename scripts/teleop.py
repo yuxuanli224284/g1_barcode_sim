@@ -47,6 +47,8 @@ from g1_barcode_sim.env import G1BarcodeEnv  # noqa: E402
 
 overrides = {"robot": {"locomotion": "unitree", "policy_model": f"assets/model/{args.policy}"}} if args.policy else None
 env = G1BarcodeEnv(args.scene, headless=headless, seed=args.seed, config_overrides=overrides)
+if env.robot_model != "g1":   # G1-only tool (unitree / gear_wbc walker, dex1 gripper keys)
+    raise SystemExit(f"teleop.py supports the G1 only, got robot model {env.robot_model!r}")
 POLICY = "gear_wbc" if env.locomotion == "gear_wbc" else os.path.basename(env.cfg["robot"]["policy_model"])
 try:
     import cv2

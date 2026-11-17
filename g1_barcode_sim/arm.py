@@ -30,33 +30,38 @@ ARM_JOINTS = {
 
 class WristIK:
     def __init__(self, env, cfg: dict):
-        """env: G1BarcodeEnv; cfg: robot.yaml `arm_ik`."""
+        """env: G1BarcodeEnv; cfg: robot.yaml `arm_ik`. Optional cfg["joints"] {left: [7 names], right: [...]} (other
+        robots, e.g. robot_t800.yaml; default: the G1 ARM_JOINTS); cfg["ee_link"] is a "{side}" format string or a
+        {left: link, right: link} dict."""
         self.env, self.cfg = env, cfg
+        self.arm_joints = cfg["joints"] if "joints" in cfg else ARM_JOINTS
+        ARM = self.arm_joints
         robot = env.robot
         names = list(robot.data.joint_names)
-        self.joint_idx = {s: [names.index(j) for j in ARM_JOINTS[s]] for s in ARM_JOINTS}
-        self.body_idx = {s: env.body_names.index(cfg["ee_link"].format(side=s)) for s in ARM_JOINTS}
+        self.joint_idx = {s: [names.index(j) for j in ARM[s]] for s in ARM}
+        ee = cfg["ee_link"]
+        self.body_idx = {s: env.body_names.index(ee[s] if isinstance(ee, dict) else ee.format(side=s)) for s in ARM}
         if robot.is_fixed_base:
-            raise RuntimeError("expected a floating-base G1")
+            raise RuntimeError("expected a floating-base robot")
         # floating base: PhysX jacobian columns 0..5 are the base, joint j is column j + 6; body index unchanged
-        self.jac_cols = {s: [j + 6 for j in self.joint_idx[s]] for s in ARM_JOINTS}
+        self.jac_cols = {s: [j + 6 for j in self.joint_idx[s]] for s in ARM}
         lim = robot.data.soft_joint_pos_limits[0].cpu().numpy()
-        self.limits = {s: lim[self.joint_idx[s]] for s in ARM_JOINTS}
+        self.limits = {s: lim[self.joint_idx[s]] for s in ARM}
         # motor index (0..28) of each arm joint in the walker's arm command (upstream: arm mapping idx + 15)
         amap = env.walker.arm_joint_mapping
-        self.motor_idx = {s: [amap[j] + 15 for j in ARM_JOINTS[s]] for s in ARM_JOINTS}
-        self.default_q = {s: np.array([env.walker.robot_dds.positions[m] for m in self.motor_idx[s]]) for s in ARM_JOINTS}
+        self.motor_idx = {s: [amap[j] + 15 for j in ARM[s]] for s in ARM}
+        self.default_q = {s: np.array([env.walker.robot_dds.positions[m] for m in self.motor_idx[s]]) for s in ARM}
         self.home = None   # measured by measure_home() once the arms have settled at the default pose
         self.reset()
 
     def reset(self):
         """Arms back to the default joint pose, IK targets cleared."""
-        for s in ARM_JOINTS:
+        for s in self.arm_joints:
             self._write_q(s, self.default_q[s])
-        self.q_cmd = {s: self.default_q[s].copy() for s in ARM_JOINTS}
-        self.target = {s: None for s in ARM_JOINTS}      # wrist position target; None = no wrist IK
-        self.aim = {s: None for s in ARM_JOINTS}         # scanner aim target {"pos", "dir"} (root frame); None = off
-        self.traj = {s: None for s in ARM_JOINTS}        # joint-space trajectory (set_joint_targets); None = off
+        self.q_cmd = {s: self.default_q[s].copy() for s in self.arm_joints}
+        self.target = {s: None for s in self.arm_joints}      # wrist position target; None = no wrist IK
+        self.aim = {s: None for s in self.arm_joints}         # scanner aim target {"pos", "dir"} (root frame); None = off
+        self.traj = {s: None for s in self.arm_joints}        # joint-space trajectory (set_joint_targets); None = off
 
     def _write_q(self, side, q):
         pos = self.env.walker.robot_dds.positions
@@ -77,8 +82,8 @@ class WristIK:
         n = int(round(max_s / self.env.policy_dt))
         for _ in range(n):
             q = self.env.robot.data.joint_pos[0].cpu().numpy()
-            if all(np.max(np.abs(q[self.joint_idx[s]] - self.default_q[s])) < tol for s in ARM_JOINTS):
-                self.home = {s: self.wrist_pos_root(s) for s in ARM_JOINTS}
+            if all(np.max(np.abs(q[self.joint_idx[s]] - self.default_q[s])) < tol for s in self.arm_joints):
+                self.home = {s: self.wrist_pos_root(s) for s in self.arm_joints}
                 return self.home
             step_fn()
         raise RuntimeError(f"arms did not settle to the default pose within {max_s} s (tol {tol} rad)")
@@ -100,8 +105,8 @@ class WristIK:
         """Joint-space command (RobotInterface.set_arm_joints): ramp the joint targets linearly from the current
         command to q (clamped to the soft limits) over n_steps policy steps, then hold q. Ends any IK target."""
         q = np.asarray(q, dtype=float)
-        if q.shape != (len(ARM_JOINTS[side]),):
-            raise ValueError(f"{side} arm needs {len(ARM_JOINTS[side])} joint values, got shape {q.shape}")
+        if q.shape != (len(self.arm_joints[side]),):
+            raise ValueError(f"{side} arm needs {len(self.arm_joints[side])} joint values, got shape {q.shape}")
         lo, hi = self.limits[side][:, 0], self.limits[side][:, 1]
         self.target[side], self.aim[side] = None, None
         self.traj[side] = {"q0": self.q_cmd[side].copy(), "q1": np.clip(q, lo, hi), "n": max(1, int(n_steps)), "k": 0}
@@ -154,13 +159,13 @@ class WristIK:
 
     def update(self):
         """One DLS step for every arm that has a target. Called once per policy step."""
-        for s in ARM_JOINTS:                               # joint-space trajectories
+        for s in self.arm_joints:                               # joint-space trajectories
             t = self.traj[s]
             if t is not None:
                 t["k"] = min(t["k"] + 1, t["n"])
                 self.q_cmd[s] = t["q0"] + (t["q1"] - t["q0"]) * (t["k"] / t["n"])
                 self._write_q(s, self.q_cmd[s])
-        active = [s for s in ARM_JOINTS if self.target[s] is not None or self.aim[s] is not None]
+        active = [s for s in self.arm_joints if self.target[s] is not None or self.aim[s] is not None]
         if not active:
             return
         R_wr = self.env._T_world_root()[:3, :3]

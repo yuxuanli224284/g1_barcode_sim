@@ -1,0 +1,20 @@
+# EngineAI T800 Pro: keys deep-merged over factors.yaml when a suite / the evaluation runs with the T800
+# (testsuite.load_factors("t800"); G1BarcodeEnv(..., config_overrides={"robot": {"model": "t800"}}) uses it for the
+# ground truth, scripts/testsuite/generate.py --robot t800 for generation). Every other factor is the G1 one.
+robot: t800
+# T800's own head camera (O2S left RGB, 8 deg down, head joints at 0), measured by
+# scripts/testsuite/measure_head_camera.py --robot t800 (user decision 2026-11-10: T800 suites use this file)
+head_camera_nominal: configs/testsuite/head_camera_nominal_t800.yaml
+task2_start:
+  # Observation distance (root to face) = smallest d in d_obs_range, step d_obs_step, whose head image holds the whole
+  # face with the fov margin (geometry.obs_pose; the agent's compute_obs_pose is the same rule). User decision
+  # 2026-11-10: to see a whole face the T800 backs up with the head held at 0 (no head pitching). Upper bound derived
+  # from head_camera_nominal_t800.yaml: camera 1.612 m above the floor (root_height 1.0146 + T_root_cam z 0.5976),
+  # optical axis 8.0 deg down, 0.0806 m ahead of the root. The lowest image row inside the 5 % fov margin
+  # (fov_margin_frac; v = 456 of 480, fy 243.2, cy 240) looks 8.0 + atan(216 / 243.2) = 49.6 deg down, so the floor
+  # line of a face is in view from a camera-to-face distance of 1.612 / tan(49.6 deg) = 1.372 m, i.e. a root-to-face
+  # distance of 1.372 + 0.081 = 1.452 m -> 1.50, the first point of the 0.05 grid beyond it. Every face that stands
+  # on the floor and whose top is below the camera fits at 1.50 (the 1.2 m wide x 1.25 m tall wall6x5 face fits there;
+  # without the margin the floor line would be in view from 1.232 / 1.312 m camera / root distance).
+  # Lower bound and step: the factors.yaml (G1) values. tests/test_t800_suites.py recomputes the bound.
+  d_obs_range: [0.60, 1.50]

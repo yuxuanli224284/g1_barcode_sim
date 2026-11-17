@@ -1,0 +1,117 @@
+# EngineAI T800 Pro. Loaded INSTEAD of robot.yaml only when a run asks for it:
+# G1BarcodeEnv(..., config_overrides={"robot": {"model": "t800"}}) (config.load_robot_cfg; robot.yaml stays G1).
+# Head-camera intrinsics / resolution / depth stay those of camera_head.yaml and the scanner geometry that of
+# scanner.yaml; this file only says where they are mounted on this robot. Vendor assets (BSD-3) are local only.
+model: t800
+end_effector: none                   # no gripper; the right hand holds the scanner rigidly (visual-only scanner)
+templates:                           # upstream task cfg used only as the scene / sim skeleton (physics material, front
+  none: Isaac-Move-Cylinder-G129-Dex1-Wholebody   # camera cfg object); its G1 articulation, G1 cameras and contact
+                                                  # sensor are replaced / removed (t800_robot.apply_t800_scene)
+locomotion: t800_walk
+physics_device: cpu                  # as the G1 config (CPU PhysX, one env)
+asset:
+  sdk_root: /data/yicheng/HumanoidBarcodeScan/third_party/engineai/engineai_robotics_native_sdk
+  usd: /data/yicheng/HumanoidBarcodeScan/third_party/engineai/usd/t800pro/t800pro.usd   # t800/convert_urdf.py
+  urdf: assets/resource/robot/t800pro/urdf/serial_t800pro.urdf       # effort / velocity limits (sdk_root-relative)
+  mjcf_links: assets/resource/robot/t800pro/xml/serial_links.xml     # rotor armature per joint (sdk_root-relative)
+t800_walk:                           # g1_barcode_sim/t800_walker.py (vendor walk policy, route A, t800/walk_policy.py)
+  walk_yaml: assets/config/t800pro/rl_walking_example/default.yaml   # obs / action / gains / default pose / control_dt
+  model_yaml: assets/config/t800pro/model/default.yaml               # 43-joint order
+  policy: /data/yicheng/HumanoidBarcodeScan/third_party/engineai/policy_npz/t800_260318_150533_60000.npz
+                                     # the yaml's .mnn exported by t800/export_policy_npz.py (Isaac env has no MNN);
+                                     # max |numpy - MNN| 2.1e-4 on 1000 random inputs, same MuJoCo closed loop
+  enable_command_lpf: false          # runner's REMOTE-stick LPF ("sim to real fine tune", walk.yaml:79-82) off: the
+                                     # agent sends velocity commands directly (user decision 2026-11-10; MuJoCo
+                                     # comparison in t800/out/mujoco_check_lpf_compare.txt)
+  arm_owner: external                # external: the 10 policy arm joints + 4 wrist joints follow the arm controller
+                                     # (arm.py, joint targets / IK); policy: the walk policy drives the 10 arm joints
+  arm_obs: spoof                     # spoof: the policy observes a virtual arm = its own last arm targets (q) and
+                                     # their finite difference (dq); real: it observes the true arm joints.
+                                     # MuJoCo (stand 10 s, arms external): drift 0.03 m spoof vs 2.36 m real
+  arm_ff: gravity_coriolis           # feed-forward torque on the external arm joints: gravity_coriolis (PhysX gravity
+                                     # + Coriolis compensation = MuJoCo qfrc_bias of the validated "gc" runs) | gravity
+                                     # | none. Arm PD gains stay the yaml gains.
+  head_hold: {J41_HEAD_PITCH: 0.0, J42_HEAD_YAW: 0.0}   # rad, held head joints. 0 = walk.yaml default_joint_q (what
+                                     # the runner commands; the gait was validated with it). Camera: head_camera
+  head_ff: gravity_coriolis          # feed-forward on the held head joints, same modes as arm_ff. Without it the head
+                                     # pitch PD (walk.yaml gains) sags under gravity: J41 +0.35 deg standing, up to
+                                     # 0.78 deg walking (Isaac smoke 2026-11-10), tilting the head camera by as much.
+                                     # The runner sends no head feed-forward (MuJoCo validation had none).
+  physics_dt: 0.002                  # s, MJCF timestep (serial_t800pro.xml:3); decimation = control_dt / physics_dt = 5
+  actuator: ideal_pd                 # ideal_pd: explicit PD tau = kp e - kd dq (+ff) clipped to the URDF effort limit,
+                                     # the runner / MuJoCo-check torque law | implicit (PhysX drive)
+  self_collision: false              # PhysX self-collision of the articulation. false = as the G1 config and as validated
+                                     # in Isaac so far. The vendor MJCF HAS self-collision (all geoms contype/conaffinity
+                                     # 1, no excludes); it never fires with the arms at the default pose, but with false
+                                     # an IK arm can pass through the torso (only collision.py's clearance model guards).
+                                     # true is untested in Isaac (t800/convert_urdf.py docstring).
+  solver_position_iterations: 8      # Isaac Lab isaaclab_assets G1_CFG / H1-class humanoids
+  solver_velocity_iterations: 4
+  soft_joint_pos_limit_factor: 0.9   # as the G1 config; used only to clamp arm joint commands (arm.py)
+init_pos: [0.0, 0.0, 1.015]          # root z: lowest foot-collider vertex on the ground at default_joint_q (URDF FK +
+                                     # LINK_ANKLE_ROLL mesh, 1.0149 m); the MJCF box feet give 1.012
+init_yaw: 0.0
+velocity_limits: {vx: 0.5, vy: 0.4, wz: 1.0}   # vy / wz = stick range (command_scale 0.4 / 1.0, walk.yaml).
+                                     # Steady tracking, 3-10 s window, this config (arms held at default), MuJoCo /
+                                     # Isaac (t800/out/sim2sim_compare.txt): vx 0.5 -> 0.44 / 0.48 (0.8 -> 0.53 / 0.59,
+                                     # saturates); vy 0.4 -> 0.17 / 0.22, -0.4 -> -0.28 / -0.31 (lateral tracks poorly
+                                     # in both); wz 1.0 -> 1.19 / 1.20
+fall:
+  tilt_deg: 45.0                     # spec (same as G1)
+  pelvis_min_z: null
+gripper: null                        # no gripper: set_gripper() returns an error
+odom:                                # same drift model as the G1 config
+  mode: drift_on_gt
+  pos_err_per_m: 0.02
+  yaw_err_deg_per_m: 1.0
+move_relative:                       # G1 block except min_cmd = smallest probed |command| that starts the robot from
+  pos_tol: 0.03                      # standing in BOTH simulators and both directions (LPF off, this config; probes
+  yaw_tol: 0.03                      # in t800/out/sim2sim_compare.txt, MuJoCo / Isaac): vx 0.2 no / yes, 0.25 yes /
+                                     # yes; vy 0.2 yes / yes, -0.2 no / yes, +-0.3 yes / yes; wz 0.4 no / no, 0.5
+                                     # yes / yes, -0.5 yes / NO, +-0.6 yes / yes -> wz 0.6 (was 0.5 from MuJoCo only)
+  brake_dist_lin: 0.15
+  brake_dist_ang: 0.30
+  min_cmd: {vx: 0.25, vy: 0.3, wz: 0.6}
+  timeout_check: 20.0
+  stop_time_s: 0.0
+  settle_speed: 0.03
+  settle_hold_s: 0.3
+  settle_max_s: 3.0
+  max_rounds: 3
+scanner_mount:                       # scanner frame G (scanner.yaml) on the right hand, rigid, visual only
+  parent_link: LINK_WRIST_ROLL_R     # palm link (fingers are its children); palm mesh x -0.031..0.055,
+  side: right                        # y -0.022..0.023 (+y = palm face: the fingers flex towards +y), z -0.113..-0.010
+  pos: [0.020, 0.038, -0.070]        # handle (30 mm along y_G) lying on the palm face y=0.023, centred on the palm
+  quat_wxyz: [0.70710678, 0.0, 0.70710678, 0.0]   # Ry(+90 deg): x_G (scan direction) = -z_hand (along the fingers /
+                                                  # forearm), z_G (handle -> head) = +x_hand (thumb side), y_G = +y_hand
+head_camera:                         # config.head_camera_mount -> camera_head.yaml prim_parent_link / offset_*
+  # T800's own head camera: the O2S LEFT RGB optical frame (user decision 2026-11-10; replaces the earlier mount that
+  # copied the G1 view pitch). Numbers read from EngineAI's description repo (no file copied; provenance:
+  # /data/yicheng/HumanoidBarcodeScan/third_party/engineai/SOURCE.md). Only the mount pose comes from there:
+  # intrinsics / resolution / depth stay those of camera_head.yaml (user decision).
+  parent_link: LINK_HEAD_YAW         # last head link (J41_HEAD_PITCH -> J42_HEAD_YAW); our SDK URDF has no O2S links
+  chain:                             # URDF fixed joints parent -> child, applied in order: T = T(xyz) Rz(y) Ry(p) Rx(r)
+    - {joint: LINK_O2S_IMU_Joint, child: LINK_O2S_IMU, xyz: [0.051259, -0.02988, 0.031395], rpy: [0.0, 0.13963, 0.0]}
+    - {joint: LINK_O2S_LEFT_RGB_Joint, child: LINK_O2S_LEFT_RGB, xyz: [0.03574, 0.05538, 0.03768],
+       rpy: [-1.5707963267948966, 0.0, -1.5707963267948966]}   # rpy (-pi/2, 0, -pi/2)
+  chain_frame: ros                   # the chain ends in an optical frame (z forward, x right, y down) = the ROS
+                                     # convention of camera_head.yaml offset_rot_wxyz; composed: left RGB at
+                                     # (0.0919, 0.0255, 0.0637) in LINK_HEAD_YAW, optical axis 8.0 deg below its +x
+  pitch_joint: J41_HEAD_PITCH        # held at t800_walk.head_hold (0 = walk default); only the smoke's head-pitch
+                                     # error metric reads this name (the mount does not depend on it)
+collision_gap: 0.0
+mode_policies: null
+arm_ik:                              # arm.py on the T800 arms (7 DoF each, policy-default pose = home)
+  joints:
+    left: [J13_SHOULDER_PITCH_L, J14_SHOULDER_ROLL_L, J15_SHOULDER_YAW_L, J16_ELBOW_PITCH_L, J17_ELBOW_YAW_L,
+           J18_WRIST_PITCH_L, J19_WRIST_ROLL_L]
+    right: [J27_SHOULDER_PITCH_R, J28_SHOULDER_ROLL_R, J29_SHOULDER_YAW_R, J30_ELBOW_PITCH_R, J31_ELBOW_YAW_R,
+            J32_WRIST_PITCH_R, J33_WRIST_ROLL_R]
+  ee_link: {left: LINK_WRIST_ROLL_L, right: LINK_WRIST_ROLL_R}
+  dls_lambda: 0.05                   # G1 value
+  gain: 0.05                         # G1 0.1 per 20 ms step -> same per-second rate at 10 ms: 1 - 0.9^0.5 = 0.051
+  max_dq_per_step: 0.025             # G1 0.05 rad per 20 ms (2.5 rad/s) -> 0.025 per 10 ms
+  workspace_half_extent: [0.25, 0.25, 0.25]   # G1 value
+  settle_tol: 0.03                   # G1 value
+  settle_max_s: 3.0                  # G1 value
+  aim_weight: 0.20                   # G1 value (nominal scan distance)

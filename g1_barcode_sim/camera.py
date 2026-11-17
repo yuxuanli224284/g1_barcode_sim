@@ -49,6 +49,17 @@ def make_T(pos, quat_wxyz) -> np.ndarray:
     return T
 
 
+def T_from_xyz_rpy(xyz, rpy) -> np.ndarray:
+    """URDF <origin xyz rpy>: child frame in the parent, R = Rz(yaw) Ry(pitch) Rx(roll) (fixed axes X, Y, Z)."""
+    r, p, y = [float(v) for v in rpy]
+    cr, sr, cp, sp, cy, sy = math.cos(r), math.sin(r), math.cos(p), math.sin(p), math.cos(y), math.sin(y)
+    T = np.eye(4)
+    T[:3, :3] = (np.array([[cy, -sy, 0], [sy, cy, 0], [0, 0, 1]]) @ np.array([[cp, 0, sp], [0, 1, 0], [-sp, 0, cp]])
+                 @ np.array([[1, 0, 0], [0, cr, -sr], [0, sr, cr]]))
+    T[:3, 3] = np.asarray(xyz, dtype=float)
+    return T
+
+
 def T_from_xy_yaw(x, y, yaw, z=0.0) -> np.ndarray:
     T = np.eye(4)
     c, s = math.cos(yaw), math.sin(yaw)

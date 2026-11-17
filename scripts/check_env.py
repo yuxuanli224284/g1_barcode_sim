@@ -43,6 +43,8 @@ def worker(scene: str, control: bool):
     res = {"scene": scene}
     t0 = time.time()
     env = G1BarcodeEnv(scene, headless=True, seed=0)
+    if env.robot_model != "g1":   # G1-only checks (gripper pad_links, gear_wbc / unitree walker)
+        raise SystemExit(f"check_env.py supports the G1 only, got robot model {env.robot_model!r}")
     # modules below need the running Isaac Sim app
     import cv2
     import omni.usd

@@ -86,11 +86,19 @@ def make_env_cfg(cfg, layout, scfg, bcfg, rcfg, ccfg, texture_dir, scancfg):
             setattr(sc, name, None)
 
     yaw = rcfg["init_yaw"]
-    sc.robot.init_state.pos = tuple(rcfg["init_pos"][:2]) + (init_root_z(rcfg),)
-    if rcfg["locomotion"] == "gear_wbc":
-        _apply_gear_wbc_robot(sc.robot, rcfg["gear_wbc"])
-    elif rcfg["locomotion"] != "unitree":
-        raise ValueError(f"robot.yaml locomotion must be unitree | gear_wbc, got {rcfg['locomotion']!r}")
+    if rcfg.get("model", "g1") == "t800":
+        # EngineAI T800 Pro (robot_t800.yaml): the template keeps only the scene / sim skeleton
+        if rcfg["locomotion"] != "t800_walk":
+            raise ValueError(f"robot_t800.yaml locomotion must be t800_walk, got {rcfg['locomotion']!r}")
+        from ..t800_robot import apply_t800_scene
+        apply_t800_scene(cfg, rcfg)
+        sc.robot.init_state.pos = tuple(rcfg["init_pos"][:2]) + (init_root_z(rcfg),)
+    else:
+        sc.robot.init_state.pos = tuple(rcfg["init_pos"][:2]) + (init_root_z(rcfg),)
+        if rcfg["locomotion"] == "gear_wbc":
+            _apply_gear_wbc_robot(sc.robot, rcfg["gear_wbc"])
+        elif rcfg["locomotion"] != "unitree":
+            raise ValueError(f"robot.yaml locomotion must be unitree | gear_wbc, got {rcfg['locomotion']!r}")
     sc.robot.init_state.rot = (math.cos(yaw / 2), 0.0, 0.0, math.sin(yaw / 2))
 
     # head camera from configs/camera_head.yaml

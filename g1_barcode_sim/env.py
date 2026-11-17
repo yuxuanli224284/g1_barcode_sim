@@ -50,7 +50,8 @@ class G1BarcodeEnv:
         self.step_hooks = []                     # callables run after every policy step (e.g. a video recorder)
         self.scenario = None                     # current test-suite scenario dict (scenario mode)
         rcfg, ccfg, scfg, bcfg = self.cfg["robot"], self.cfg["camera"], self.cfg["scene"], self.cfg["barcode"]
-        if rcfg["end_effector"] != "dex1":
+        self.robot_model = rcfg.get("model", "g1")      # g1 (robot.yaml) | t800 (robot_t800.yaml)
+        if self.robot_model == "g1" and rcfg["end_effector"] != "dex1":
             raise NotImplementedError("only end_effector=dex1 is wired up in this release (see README: 修改与扩展)")
         self.app = _launch_app(headless, rcfg["physics_device"])
 
@@ -89,6 +90,12 @@ class G1BarcodeEnv:
                 raise ValueError("mode_policies applies to the unitree walker only; GR00T switches Balance/Walk itself")
             self.walker = GearWbcWalker(self.env, rcfg["gear_wbc"])
             self.policy_dt = self.env.physics_dt * self.walker.decimation
+        elif self.locomotion == "t800_walk":
+            from .t800_walker import T800Walker
+            if rcfg.get("mode_policies"):
+                raise ValueError("mode_policies applies to the unitree walker only")
+            self.walker = T800Walker(self.env, rcfg)
+            self.policy_dt = self.env.physics_dt * self.walker.decimation
         else:
             self.walker = InProcessWholebodyWalker(self.env, model_path=rcfg["policy_model"], height_cmd=rcfg["height_cmd"])
             self.policy_dt = self.env.physics_dt * 4   # upstream get_action() sub-steps physics 4x
@@ -99,7 +106,8 @@ class G1BarcodeEnv:
         self.body_names = list(self.robot.data.body_names)
         mc = rcfg["scanner_mount"]
         self._mount_body = self.body_names.index(mc["parent_link"])
-        self.scanner_side = mc["parent_link"].split("_")[0]
+        # side: explicit scanner_mount.side (T800 link names carry no left_/right_ prefix), else the link-name prefix
+        self.scanner_side = mc["side"] if "side" in mc else mc["parent_link"].split("_")[0]
         if self.scanner_side not in ("left", "right"):
             raise ValueError(f"scanner_mount.parent_link must be a left_/right_ link, got {mc['parent_link']}")
         self.scanner_mount_prim = f"/World/envs/env_0/Robot/{mc['parent_link']}/scanner_mount"
@@ -128,6 +136,10 @@ class G1BarcodeEnv:
         # start the episode from a clean state: robot back at its init pose with default joints, odom / sim time reset
         self.teleport_root(rcfg["init_pos"][0], rcfg["init_pos"][1], rcfg["init_yaw"])
         self._post_reset(seed)
+        self.head_camera_check = None
+        if rcfg.get("head_camera") is not None:         # robot-file head-camera mount (T800): verify it against URDF FK
+            from .t800_robot import check_head_camera_mount
+            self.head_camera_check = check_head_camera_mount(self)
 
     # ------------------------------------------------------------------ internals
     def _post_reset(self, seed):
@@ -139,7 +151,8 @@ class G1BarcodeEnv:
         self._reset_walker_buffers()
         self.arm.reset()
         self.walker.set_velocity(0.0, 0.0, 0.0)
-        self.walker.set_gripper_joint_targets(*self._default_gripper_targets())
+        if self.cfg["robot"]["gripper"] is not None:     # T800: no gripper
+            self.walker.set_gripper_joint_targets(*self._default_gripper_targets())
         self._sim_time = 0.0
         self._last_min_gap = None   # clearance of the latest status check (frame_state); none yet in this episode
         self._step_once()  # one policy step so the cameras hold a rendered frame
@@ -173,7 +186,7 @@ class G1BarcodeEnv:
 
     def _reset_walker_buffers(self):
         w = self.walker
-        if self.locomotion == "gear_wbc":
+        if self.locomotion in ("gear_wbc", "t800_walk"):
             w.reset()
             return
         w.actor_obs_buffer.reset()
@@ -282,7 +295,13 @@ class G1BarcodeEnv:
         if isinstance(sc, str):
             sc = json.load(open(sc)) if os.path.exists(sc) else load_scenario(sc)
         if not hasattr(self, "_ts_factors"):
-            self._ts_factors = load_factors()
+            # factors of this robot (T800: configs/testsuite/factors_t800.yaml merged in; G1: factors.yaml as is)
+            self._ts_factors = load_factors(self.robot_model)
+        # a task-2 start pose is planned with one robot's head camera (generate.py --robot); scenarios without the key
+        # are G1 suites. Other tasks start from the scenario's robot_init only and run on either robot.
+        if sc.get("task2_start") is not None and sc.get("robot", "g1") != self.robot_model:
+            raise ValueError(f"scenario {sc['id']} was generated for robot {sc.get('robot', 'g1')!r} (task-2 start pose "
+                             f"from its head camera), this env runs {self.robot_model!r}")
         self.env.reset()
         lay = to_layout(sc, self._ts_factors)
         stage = omni.usd.get_context().get_stage()
@@ -313,6 +332,7 @@ class G1BarcodeEnv:
         def opening(side):
             q = np.mean([jp[jn.index(j)] for j in g["joints"][side]])
             return float((q - g["joint_closed"]) / (g["joint_open"] - g["joint_closed"]))
+        grip = None if g is None else {"left": opening("left"), "right": opening("right")}   # None: robot without gripper
         obs = {
             "rgb": rgb, "depth": depth.astype(np.float32),
             "K": self.head_cam.data.intrinsic_matrices[0].cpu().numpy().astype(np.float64),
@@ -320,7 +340,7 @@ class G1BarcodeEnv:
             "T_world_root_gt": T_wr,            # evaluation only
             "T_world_root_odom": self._odom_T.copy(),
             "T_root_scanner_mount": T_rw @ T_wb @ self._T_body_mount,
-            "gripper_state": {"left": opening("left"), "right": opening("right")},
+            "gripper_state": grip,
             "wrist_pos_root": {sd: self.arm.wrist_pos_root(sd) for sd in ("left", "right")},
             "wrist_target_root": {sd: (None if self.arm.target[sd] is None else self.arm.target[sd].copy()) for sd in ("left", "right")},
             "timestamp": self._sim_time,
@@ -546,6 +566,8 @@ class G1BarcodeEnv:
         other gripper (the reply says so)."""
         if side not in ("left", "right", "both"):
             return {"status": "error", "reason": f"side must be left|right|both, got {side!r}"}
+        if self.cfg["robot"]["gripper"] is None:
+            return {"status": "error", "reason": f"robot {self.robot_model} has no gripper (robot config gripper: null)"}
         sides = ["left", "right"] if side == "both" else [side]
         note = ""
         if self.scanner_on and self.scanner_side in sides:

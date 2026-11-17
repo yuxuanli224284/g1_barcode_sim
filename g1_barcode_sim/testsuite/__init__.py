@@ -15,10 +15,30 @@ SUITES_DIR = os.path.join(PKG_ROOT, "suites")
 FACTORS_YAML = os.path.join(PKG_ROOT, "configs", "testsuite", "factors.yaml")
 
 
-def load_factors() -> dict:
+# Robot-specific factor files, deep-merged over factors.yaml for that robot (config.load_robot_cfg selects the robot the
+# same way). G1 has none: load_factors() / load_factors("g1") return factors.yaml unchanged.
+ROBOT_FACTOR_FILES = {"t800": os.path.join(PKG_ROOT, "configs", "testsuite", "factors_t800.yaml")}
+
+
+def load_factors(robot: str = "g1") -> dict:
+    """factors.yaml, with configs/testsuite/factors_<robot>.yaml merged over it for a non-G1 robot (head-camera nominal
+    file, observation-distance range). The merged dict records the robot under "robot" (G1: no key, as before)."""
     import yaml
     with open(FACTORS_YAML) as f:
-        return yaml.safe_load(f)
+        F = yaml.safe_load(f)
+    if robot == "g1":
+        return F
+    if robot not in ROBOT_FACTOR_FILES:
+        raise ValueError(f"no test-suite factor file for robot {robot!r}; known: g1, {sorted(ROBOT_FACTOR_FILES)}")
+    from ..config import deep_merge
+    with open(ROBOT_FACTOR_FILES[robot]) as f:
+        over = yaml.safe_load(f)
+    if over.get("robot") != robot:
+        raise ValueError(f"{ROBOT_FACTOR_FILES[robot]} must declare robot: {robot} (got {over.get('robot')!r})")
+    unknown = [k for k in over if k != "robot" and k not in F]
+    if unknown:
+        raise ValueError(f"{ROBOT_FACTOR_FILES[robot]}: keys {unknown} are not factors.yaml keys")
+    return deep_merge(F, over)
 
 
 def list_suites() -> list[dict]:

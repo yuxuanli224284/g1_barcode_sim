@@ -1,0 +1,104 @@
+source: 'scripts/testsuite/measure_head_camera.py: standing robot (s1_table), mean
+  over 2 s; T_root_cam = head camera optical frame (ROS) in the pelvis frame; robot
+  t800, root = LINK_BASE, root_height = its world z'
+width: 640
+height: 480
+K:
+- - 243.2
+  - 0.0
+  - 320.0
+- - 0.0
+  - 243.2
+  - 240.0
+- - 0.0
+  - 0.0
+  - 1.0
+T_root_cam:
+- - 0.00032
+  - -0.13917
+  - 0.99027
+  - 0.08059
+- - -1.0
+  - -5.0e-05
+  - 0.00032
+  - 0.02553
+- - 0.0
+  - -0.99027
+  - -0.13917
+  - 0.59762
+- - 0.0
+  - 0.0
+  - 0.0
+  - 1.0
+root_height: 1.0146
+sway_std_m: 2.0e-05
+robot: t800
+mount:
+  parent_link: LINK_HEAD_YAW
+  chain:
+  - LINK_O2S_IMU_Joint
+  - LINK_O2S_LEFT_RGB_Joint
+  T_link_cam:
+  - - 0.0
+    - -0.139177
+    - 0.990268
+    - 0.091895
+  - - -1.0
+    - 0.0
+    - 0.0
+    - 0.0255
+  - - -0.0
+    - -0.990268
+    - -0.139177
+    - 0.063734
+  - - 0.0
+    - 0.0
+    - 0.0
+    - 1.0
+mount_check:
+  obs:
+    trans_mm: 0.00013411685134424465
+    rot_deg: 7.731249187600082e-06
+  render:
+    trans_mm: 0.0001354141293244297
+    rot_deg: 1.0386604689550578e-05
+  T_root_cam_fk:
+  - - -0.000463
+    - -0.138588
+    - 0.99035
+    - 0.080545
+  - - -1.0
+    - 6.4e-05
+    - -0.000459
+    - 0.025459
+  - - -0.0
+    - -0.99035
+    - -0.138588
+    - 0.597678
+  - - 0.0
+    - 0.0
+    - 0.0
+    - 1.0
+  T_link_cam_usd_ros:
+  - - 0.0
+    - -0.139177
+    - 0.990268
+    - 0.091895
+  - - -1.0
+    - -0.0
+    - 0.0
+    - 0.0255
+  - - 0.0
+    - -0.990268
+    - -0.139177
+    - 0.063734
+  - - 0.0
+    - 0.0
+    - 0.0
+    - 1.0
+  tol_mm: 1.0
+  tol_deg: 0.1
+  joint_q_deg:
+    J12_TORSO_YAW: -0.0056
+    J41_HEAD_PITCH: -0.034
+    J42_HEAD_YAW: -0.021
