@@ -140,3 +140,41 @@ def visibility(K, T_world_cam, width, height, raw_depth, bc, depth_tol):
         out["px_h"] = float(np.linalg.norm(cuv[3] - cuv[0]))
     out["visible"] = bool(facing and np.isfinite(rd) and abs(rd - zc) < depth_tol)
     return out
+
+
+# ---------------------------------------------------------------- head camera model (configs/camera_head.yaml)
+def focal_for_hfov(hfov_deg: float, horizontal_aperture: float) -> float:
+    """Focal length (same unit as the aperture) of a pinhole camera with this horizontal field of view."""
+    return horizontal_aperture / 2.0 / math.tan(math.radians(hfov_deg) / 2.0)
+
+
+def intrinsics(width: int, height: int, hfov_deg: float) -> np.ndarray:
+    """K of a square-pixel pinhole camera with the principal point at the image centre (as Isaac's PinholeCameraCfg)."""
+    f = width / 2.0 / math.tan(math.radians(hfov_deg) / 2.0)
+    return np.array([[f, 0.0, width / 2.0], [0.0, f, height / 2.0], [0.0, 0.0, 1.0]])
+
+
+def resolve_head_model(cfg: dict) -> dict:
+    """model d435i: the colour camera of the `d435i` block becomes the head camera (width, height, focal_length,
+    horizontal_aperture, offset_pos), and cfg["stereo"] holds the infrared pair (resolved). model upstream: unchanged,
+    cfg["stereo"] = None."""
+    model = cfg.get("model", "upstream")
+    if model == "upstream":
+        return dict(cfg, stereo=None)
+    if model != "d435i":
+        raise ValueError(f"camera_head.yaml model must be d435i | upstream, got {model!r}")
+    D = cfg["d435i"]
+    out = dict(cfg)
+    c = D["color"]
+    out.update(width=int(c["width"]), height=int(c["height"]),
+               focal_length=focal_for_hfov(c["hfov_deg"], cfg["horizontal_aperture"]),
+               offset_pos=[float(v) for v in D["color_pos"]])
+    ir = D["ir"]
+    out["stereo"] = {"width": int(ir["width"]), "height": int(ir["height"]), "hfov_deg": float(ir["hfov_deg"]),
+                     "focal_length": focal_for_hfov(ir["hfov_deg"], cfg["horizontal_aperture"]),
+                     "horizontal_aperture": float(cfg["horizontal_aperture"]),
+                     "left_pos": [float(v) for v in D["ir_left_pos"]], "right_pos": [float(v) for v in D["ir_right_pos"]],
+                     "baseline_m": float(np.linalg.norm(np.subtract(D["ir_left_pos"], D["ir_right_pos"]))),
+                     "projector": dict(D["projector"]), "ambient_gain": float(D["ir_ambient_gain"]),
+                     "noise_sigma": float(D["ir_noise_sigma"])}
+    return out

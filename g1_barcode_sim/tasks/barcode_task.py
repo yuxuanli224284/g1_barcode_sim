@@ -104,6 +104,20 @@ def make_env_cfg(cfg, layout, scfg, bcfg, rcfg, ccfg, texture_dir, scancfg):
                                           clipping_range=tuple(ccfg["clipping_range"]))
     hc.offset = CameraCfg.OffsetCfg(pos=tuple(ccfg["offset_pos"]), rot=tuple(ccfg["offset_rot_wxyz"]),
                                     convention=ccfg["offset_convention"])
+    # D435i infrared pair (camera_head.yaml model d435i): rgb + render depth of each imager feed the infrared image
+    # synthesis (stereo_ir.py); same mount rotation as the colour camera, positions on d435_link
+    st = ccfg.get("stereo")
+    if st is not None:
+        for side in ("left", "right"):
+            setattr(sc, f"head_ir_{side}_camera", CameraCfg(
+                prim_path=f"{{ENV_REGEX_NS}}/Robot/{ccfg['prim_parent_link']}/ir_{side}_cam",
+                width=st["width"], height=st["height"], update_period=hc.update_period,
+                data_types=["rgb", "distance_to_image_plane"],
+                spawn=sim_utils.PinholeCameraCfg(focal_length=st["focal_length"], focus_distance=ccfg["focus_distance"],
+                                                 horizontal_aperture=st["horizontal_aperture"],
+                                                 clipping_range=tuple(ccfg["clipping_range"])),
+                offset=CameraCfg.OffsetCfg(pos=tuple(st[f"{side}_pos"]), rot=tuple(ccfg["offset_rot_wxyz"]),
+                                           convention=ccfg["offset_convention"])))
 
     ac = ccfg["aux"]
     sc.aux_camera = CameraCfg(prim_path="/World/AuxCamera", width=ac["width"], height=ac["height"], update_period=0.0,

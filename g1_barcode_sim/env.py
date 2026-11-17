@@ -114,6 +114,18 @@ class G1BarcodeEnv:
             raise ValueError("camera_head.yaml offset_convention must be 'ros' (T_link_cam is built from it)")
         self._cam_body = self.body_names.index(ccfg["prim_parent_link"])
         self._T_link_cam = make_T(ccfg["offset_pos"], ccfg["offset_rot_wxyz"])
+        # D435i infrared pair (camera_head.yaml model d435i): cameras + infrared image synthesis (stereo_ir.py)
+        self.ir_cams, self._ir_synth, self._T_link_ir = None, None, None
+        if ccfg.get("stereo") is not None:
+            from .camera import intrinsics
+            from .stereo_ir import IRStereoSynth
+            st = ccfg["stereo"]
+            self.ir_cams = {s: self.env.scene[f"head_ir_{s}_camera"] for s in ("left", "right")}
+            self._T_link_ir = {s: make_T(st[f"{s}_pos"], ccfg["offset_rot_wxyz"]) for s in ("left", "right")}
+            P = st["projector"]
+            self._ir_synth = IRStereoSynth(st, intrinsics(st["width"], st["height"], st["hfov_deg"]),
+                                           self._T_link_ir["left"], self._T_link_ir["right"],
+                                           make_T(P["pos"], ccfg["offset_rot_wxyz"]) if P["enabled"] else None, seed)
         from .collision import RobotCollisionModel
         self.collision_model = RobotCollisionModel(self.robot, self.layout)
         self._scanner_grip_q = None
@@ -340,6 +352,29 @@ class G1BarcodeEnv:
             obs["scanner_aim_target"] = self.arm.aim_target_root(self.scanner_side)   # current root frame
             obs["scanner_aim_error"] = self.arm.aim_error(self.scanner_side)
         return obs
+
+    def head_stereo_obs(self) -> dict:
+        """D435i infrared pair of the current frame (camera_head.yaml model d435i): left / right infrared images
+        (uint8), their intrinsics (as rendered), the left imager pose in the root frame and the right imager pose in the
+        left imager frame (the stereo calibration). Separate from get_obs: the synthesis costs ~0.1 s, and get_obs runs
+        on every step."""
+        if self.ir_cams is None:
+            raise RuntimeError("no infrared stereo pair (camera_head.yaml model is not d435i)")
+        from .camera import inv_T
+        out = {}
+        for s, cam in self.ir_cams.items():
+            o = cam.data.output
+            rgb = o["rgb"][0].cpu().numpy()[..., :3].astype(np.uint8)
+            d = o["distance_to_image_plane"][0].cpu().numpy().squeeze(-1)
+            out[f"ir_{s}"] = self._ir_synth.image(s, rgb, d)
+        T_wr = self._T_world_root()
+        T_wl = self._link_T(self._cam_body) @ self._T_link_ir["left"]
+        out.update(K_ir=self.ir_cams["left"].data.intrinsic_matrices[0].cpu().numpy().astype(np.float64),
+                   K_ir_right=self.ir_cams["right"].data.intrinsic_matrices[0].cpu().numpy().astype(np.float64),
+                   T_root_ir_left=inv_T(T_wr) @ T_wl,
+                   T_irleft_irright=inv_T(self._T_link_ir["left"]) @ self._T_link_ir["right"],
+                   timestamp=self._sim_time)
+        return out
 
     def frame_state(self) -> dict:
         """Cheap per-frame state for recorders / evaluation (evaluation only: ground-truth poses). Poses and intrinsics

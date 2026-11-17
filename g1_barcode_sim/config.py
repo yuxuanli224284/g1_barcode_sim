@@ -39,7 +39,8 @@ def load_robot_cfg(overrides: dict | None = None) -> dict:
 
 
 def load_camera_cfg(overrides: dict | None = None) -> dict:
-    return deep_merge(_load(os.path.join(CFG_DIR, "camera_head.yaml")), overrides)
+    from .camera import resolve_head_model
+    return resolve_head_model(deep_merge(_load(os.path.join(CFG_DIR, "camera_head.yaml")), overrides))
 
 
 def load_scanner_cfg(overrides: dict | None = None) -> dict:

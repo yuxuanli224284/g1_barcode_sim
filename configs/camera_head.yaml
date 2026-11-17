@@ -1,5 +1,37 @@
-# Head camera. Source priority: (1) unitree_sim_isaaclab's existing G1 head camera
-# config -> (2) G1 URDF/USD camera link -> (3) D435i defaults. Values below are (1) unless marked.
+# Head camera. Two models (`model`):
+# - d435i (default since 2026-11-13): the G1 head's Intel RealSense D435i as built: a colour camera plus a pair of
+#   infrared cameras (stereo depth) with a dot-pattern projector, block `d435i` below. The agent gets the colour image
+#   and the two infrared images; depth is the agent's own stereo matching (the render depth of the colour camera is
+#   kept for evaluation only). config.load_camera_cfg copies the colour camera of this block over the single-camera
+#   keys below (width, height, focal_length, horizontal_aperture, offset_pos), so the colour camera is "the head
+#   camera" everywhere else.
+# - upstream: unitree_sim_isaaclab's single G1 head camera (105 deg, rgb; render depth added by us), keys below.
+model: d435i
+d435i:
+  # Intel D435i datasheet / RealSense store page: depth (infrared pair) FOV 87 x 58 deg, colour FOV 69 x 42 deg,
+  # stereo baseline 50 mm. 848 x 480 is a native mode of both streams (16:9 like the sensors; square pixels, so the
+  # vertical FOV follows: 87 deg -> 56.9 deg, 69 deg -> 42.5 deg).
+  color: {width: 848, height: 480, hfov_deg: 69.0}
+  ir: {width: 848, height: 480, hfov_deg: 87.0}
+  # positions on d435_link (x forward, y left, z up), realsense2_description _d435.urdf.xacro: left infrared imager =
+  # depth origin = the link origin, right imager 50 mm to the right (-y), colour camera 15 mm to the left (+y).
+  # Projector: between the imagers (its exact position is not in the description; midpoint, our assumption).
+  ir_left_pos: [0.0, 0.0, 0.0]
+  ir_right_pos: [0.0, -0.050, 0.0]
+  color_pos: [0.0, 0.015, 0.0]
+  projector:
+    enabled: true
+    pos: [0.0, -0.025, 0.0]
+    hfov_deg: 90.0                     # covers the 87 deg infrared view
+    vfov_deg: 63.0
+    texel_deg: 0.05                    # pattern sampling (twice finer than an infrared pixel, 87/848 = 0.10 deg)
+    dot_density: 0.016                 # dots per texel: ~one dot per 0.4 deg = ~4 infrared px, i.e. several dots in a
+                                       # 7 x 7 matching window (hand-chosen; the real D435 pattern is not published)
+    dot_sigma_texel: 1.4               # Gaussian dot, ~1.5 infrared px wide
+    irradiance_at_1m: 0.35             # dot peak added to the infrared image (0-1) at 1 m on a white surface (hand-chosen)
+    seed: 0
+  ir_ambient_gain: 0.8                 # infrared image = gain x luminance of the visible render (no infrared material model)
+  ir_noise_sigma: 0.008                # read noise, std of the 0-1 intensity (~2 grey levels of 255; hand-chosen)
 source: "unitree_sim_isaaclab tasks/common_config/camera_configs.py CameraPresets.g1_front_camera"
 prim_parent_link: d435_link          # link in the G1 USD
 prim_name: front_cam
