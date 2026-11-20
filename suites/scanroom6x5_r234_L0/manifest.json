@@ -1,0 +1,20 @@
+{
+ "suite": "scanroom6x5_r234_L0",
+ "base_suite": "scanroom6x5_r234_L0",
+ "version": 1,
+ "seed": 0,
+ "task": 3,
+ "level": "L0",
+ "count": 1,
+ "definition": {
+  "note": "hand-specified (scripts/testsuite/make_scanroom_suite.py)"
+ },
+ "rejections": {},
+ "warnings": [],
+ "skipped_infeasible": [],
+ "code_hash": null,
+ "head_camera_nominal": null,
+ "scenario_ids": [
+  "scanroom6x5_r234_L0_0000"
+ ]
+}
