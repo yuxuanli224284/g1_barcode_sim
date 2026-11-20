@@ -11,17 +11,26 @@ Subset suites (same boxes and labels; a task-3 episode that scans only some boxe
         --targets C1R4,C2R4,C3R4,C4R4,C5R4,C6R4,C1R3,C2R3,C3R3,C4R3,C5R3,C6R3,C1R2,C2R2,C3R2,C4R2,C5R2,C6R2 \
         --order rows --rows_from bottom --all_columns --head_views upright --phase1_view obs_pose
 
+    python scripts/testsuite/make_scanroom_suite.py --suite scanroom6x5_r234_layout_L0 --robot_dist 0.60 --lateral 0.0 \
+        --targets C1R4,C2R4,C3R4,C4R4,C5R4,C6R4,C1R3,C2R3,C3R3,C4R3,C5R3,C6R3,C1R2,C2R2,C3R2,C4R2,C5R2,C6R2 \
+        --order serpentine --rows_from bottom --all_columns --head_views upright --phase1_view obs_pose --wall_layout
+
   - "target_boxes": the GT box ids (evaluation only; the agent never sees box ids);
   - "scan_targets": the same boxes as the task instruction in robot terms, derived from the ids (C<col>R<row>, column 1
     = the robot's left, row 1 = the bottom row): {<columns>, <rows>, "order": ...}, with <columns> =
     "columns_from_left": [...] or, with --all_columns, "columns": "all" (the targets must then cover every column), and
     <rows> = "rows_from_top": [...] (--rows_from top, the default) or "rows_from_bottom": [...] (--rows_from bottom).
     The targets must form a full block of columns x rows (otherwise no such instruction exists). order: "rows" (rows
-    from the top, left to right inside a row) or "columns" (the default task-3 order).
+    from the top, left to right inside a row), "columns" (the default task-3 order) or "serpentine" (rows from the top,
+    the top requested row left to right, the next right to left, alternating).
   - "head_views" (--head_views upright): the agent takes upright head views only (no lean-back looks); absent = the
     camera model's default. "phase1_view" (--phase1_view start_pose | obs_pose): with obs_pose the robot may walk (also
     back) to an observation pose before planning its scans; absent = start_pose for a subset task. Both are written only
     when given; the simulator does not read them (task fields for the agent, like "scan_targets").
+  - "wall_layout" (--wall_layout): the wall layout given to the agent, {"columns": COLS, "rows": ROWS, "box_w": BOX_W,
+    "box_h": BOX_H, "base": "floor"} from the scene constants below ("floor": row 1 stands on the floor). Written only
+    when given; it needs a subset task planned from the observation pose (--phase1_view obs_pose), the only mode in
+    which the agent accepts a layout. The simulator does not read it.
   - "target" stays "all" (testsuite scenario.target_box_id: any other value would select the rightmost box).
 
 Scene (assets/scenes/scan_room_20261117, from scan_room_same_size_20261117.zip / isaac_environment): a 6 x 5 wall of
@@ -56,6 +65,12 @@ SUITE = "scanroom6x5_L0"
 SCENE_DIR = "assets/scenes/scan_room_20261117"
 COLS, ROWS = 6, 5
 BOX_W, BOX_D, BOX_H = 0.20, 0.40, 0.25          # scene_regularized.usda boxDimensionsMeters / its collider cubes
+ORDERS = ("columns", "rows", "serpentine")      # task-3 order rules (the agent's scan_order.ORDER_RULES)
+
+
+def wall_layout() -> dict:
+    """The wall layout given to the agent (--wall_layout): the scene's grid and box size; row 1 stands on the floor."""
+    return {"columns": COLS, "rows": ROWS, "box_w": BOX_W, "box_h": BOX_H, "base": "floor"}
 
 
 def label_rect(pts_asset, col, row):
@@ -93,15 +108,16 @@ def subset_spec(targets: list[str], order: str, rows_from: str = "top", columns:
     cols, rows = sorted({c for c, _ in cells}), sorted({r for _, r in cells})
     if len(set(cells)) != len(cells) or set(cells) != {(c, r) for c in cols for r in rows}:
         raise ValueError(f"targets {targets} are not a full block of columns x rows (no columns / rows instruction)")
-    if order not in ("rows", "columns"):
-        raise ValueError(f"order must be rows | columns, got {order!r}")
+    if order not in ORDERS:
+        raise ValueError(f"order must be one of {' | '.join(ORDERS)}, got {order!r}")
     if columns == "all" and cols != list(range(1, COLS + 1)):
         raise ValueError(f"targets {targets} cover columns {cols}, not all {COLS} columns (no \"all columns\" instruction)")
     col_part = {"columns": "all"} if columns == "all" else {"columns_from_left": cols}
     return {**col_part, f"rows_from_{rows_from}": rows, "order": order}
 
 
-def task_note(targets: list[str], spec: dict, head_views: str | None, phase1_view: str | None) -> str:
+def task_note(targets: list[str], spec: dict, head_views: str | None, phase1_view: str | None,
+              layout: dict | None = None) -> str:
     """The scenario note's task sentence, built from the spec parts (reproduces the 4-box suite's text exactly)."""
     cols = "all columns" if spec.get("columns") == "all" else f"columns {spec['columns_from_left']} from the left"
     edge = "top" if "rows_from_top" in spec else "bottom"
@@ -111,8 +127,15 @@ def task_note(targets: list[str], spec: dict, head_views: str | None, phase1_vie
     else:
         where = "works from near its start pose"
     views = " (no lean-back head views)" if upright else ""
+    order = spec["order"]
+    if order == "serpentine":
+        order += " (rows from the top, left to right, then right to left, alternating)"
+    given = ""
+    if layout is not None:
+        given = (f"; the wall layout ({layout['columns']} x {layout['rows']} boxes of {layout['box_w']} x "
+                 f"{layout['box_h']} m on the {layout['base']}) is given to the agent")
     return (f" Task: scan only the labels of boxes {', '.join(targets)} ({cols}, rows {spec[f'rows_from_{edge}']} from "
-            f"the {edge} of the wall), order {spec['order']}; the robot {where}{views}.")
+            f"the {edge} of the wall), order {order}; the robot {where}{views}{given}.")
 
 
 def build(a) -> tuple[dict, dict]:
@@ -160,7 +183,9 @@ def build(a) -> tuple[dict, dict]:
         for k in ("head_views", "phase1_view"):
             if getattr(a, k) is not None:
                 params[k] = getattr(a, k)
-        note = task_note(targets, spec, a.head_views, a.phase1_view)
+        if a.wall_layout:
+            params["wall_layout"] = True
+        note = task_note(targets, spec, a.head_views, a.phase1_view, wall_layout() if a.wall_layout else None)
     sc = {"id": sid, "suite": suite, "task": 3, "seed": a.seed, "index": 0, "level": "L0", "factors_varied": [],
           "factor": {"note": f"scan room reconstruction (2026-11-17) with our labels: 6 x 5 boxes {BOX_W} x {BOX_D} x {BOX_H} m "
                              f"(w x d x h), front x = {fx} m, centred on y = 0; one backed code128 label per box at the "
@@ -182,6 +207,8 @@ def build(a) -> tuple[dict, dict]:
         for k in ("head_views", "phase1_view"):           # agent task fields, written only when given
             if getattr(a, k) is not None:
                 sc[k] = getattr(a, k)
+        if a.wall_layout:
+            sc["wall_layout"] = wall_layout()
     from g1_barcode_sim.testsuite.scenario import to_layout
     to_layout(sc, F)                                  # validates boxes, stacking, label fit and overlaps
     man = {"suite": suite, "base_suite": suite, "version": 1, "seed": a.seed, "task": 3, "level": "L0", "count": 1,
@@ -196,7 +223,7 @@ def parse_args(argv=None):
     ap.add_argument("--robot_dist", type=float, default=0.65, help="root distance from the box faces (m)")
     ap.add_argument("--lateral", type=float, default=0.0, help="root start y (m, + = the robot's left of the wall centre)")
     ap.add_argument("--targets", default=None, help="comma-separated box ids C<col>R<row> to scan (subset task)")
-    ap.add_argument("--order", default="columns", choices=["columns", "rows"], help="scan order of a subset task")
+    ap.add_argument("--order", default="columns", choices=list(ORDERS), help="scan order of a subset task")
     ap.add_argument("--rows_from", default="top", choices=["top", "bottom"],
                     help="subset task: count the target rows from the top (default) or from the bottom of the wall")
     ap.add_argument("--all_columns", action="store_true",
@@ -205,14 +232,19 @@ def parse_args(argv=None):
                     help="subset task: scenario head_views (upright = no lean-back head views); absent = camera default")
     ap.add_argument("--phase1_view", default=None, choices=["start_pose", "obs_pose"],
                     help="subset task: scenario phase1_view (obs_pose = the robot may walk to an observation pose)")
+    ap.add_argument("--wall_layout", action="store_true",
+                    help="subset task planned from the observation pose: write the scenario's wall_layout (grid and box "
+                         "size given to the agent)")
     ap.add_argument("--seed", type=int, default=0)
     a = ap.parse_args(argv)
     if not a.targets:
         given = [f"--{k}" for k, v in (("order", a.order != "columns"), ("rows_from", a.rows_from != "top"),
                                        ("all_columns", a.all_columns), ("head_views", a.head_views is not None),
-                                       ("phase1_view", a.phase1_view is not None)) if v]
+                                       ("phase1_view", a.phase1_view is not None), ("wall_layout", a.wall_layout)) if v]
         if given:
             ap.error(f"{', '.join(given)} appl{'ies' if len(given) == 1 else 'y'} to a subset task (--targets)")
+    if a.wall_layout and a.phase1_view != "obs_pose":
+        ap.error("--wall_layout needs --phase1_view obs_pose (the agent plans a wall layout from the observation pose)")
     return a
 
 
