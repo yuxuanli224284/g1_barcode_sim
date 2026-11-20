@@ -1,6 +1,7 @@
 """scripts/testsuite/make_scanroom_suite.py: the default suite is reproduced byte for byte, the subset suites (4-box,
-rows 2-4 from the bottom x all columns, the same with the wall layout and the serpentine order) have the same boxes /
-labels with their own start pose, GT target boxes and the same targets in robot terms."""
+rows 2-4 from the bottom x all columns, the same with the wall layout and the serpentine order, the 4-box layout quick
+test, and the strip-order suites) have the same boxes / labels with their own start pose, GT target boxes and the same
+targets in robot terms."""
 import importlib.util
 import json
 import math
@@ -21,6 +22,16 @@ R234 = ["--suite", "scanroom6x5_r234_L0", "--robot_dist", "0.60", "--lateral", "
 LAYOUT = ["--suite", "scanroom6x5_r234_layout_L0", "--robot_dist", "0.60", "--lateral", "0.0",
           "--targets", ",".join(R234_BOXES), "--order", "serpentine", "--rows_from", "bottom", "--all_columns",
           "--head_views", "upright", "--phase1_view", "obs_pose", "--wall_layout"]
+C12R24_LAYOUT = ["--suite", "scanroom6x5_c12r24_layout_L0", "--robot_dist", "0.60", "--lateral", "0.0",
+                 "--targets", "C1R4,C2R4,C1R2,C2R2", "--order", "serpentine", "--rows_from", "bottom",
+                 "--head_views", "upright", "--phase1_view", "obs_pose", "--wall_layout"]
+C12R234_BOXES = ["C1R4", "C2R4", "C1R3", "C2R3", "C1R2", "C2R2"]
+STRIP_QUICK = ["--suite", "scanroom6x5_c12r234_strip_L0", "--robot_dist", "0.60", "--lateral", "0.0",
+               "--targets", ",".join(C12R234_BOXES), "--order", "strips", "--strip_columns", "2", "--rows_from", "bottom",
+               "--head_views", "upright", "--phase1_view", "obs_pose", "--wall_layout"]
+STRIP = ["--suite", "scanroom6x5_r234_strip_L0", "--robot_dist", "0.60", "--lateral", "0.0",
+         "--targets", ",".join(R234_BOXES), "--order", "strips", "--strip_columns", "2", "--rows_from", "bottom",
+         "--all_columns", "--head_views", "upright", "--phase1_view", "obs_pose", "--wall_layout"]
 
 
 def _stored(suite):
@@ -29,7 +40,9 @@ def _stored(suite):
 
 
 @pytest.mark.parametrize("argv,suite", [([], "scanroom6x5_L0"), (SUB4, "scanroom6x5_sub4_L0"), (R234, "scanroom6x5_r234_L0"),
-                                        (LAYOUT, "scanroom6x5_r234_layout_L0")])
+                                        (LAYOUT, "scanroom6x5_r234_layout_L0"),
+                                        (C12R24_LAYOUT, "scanroom6x5_c12r24_layout_L0"),
+                                        (STRIP_QUICK, "scanroom6x5_c12r234_strip_L0"), (STRIP, "scanroom6x5_r234_strip_L0")])
 def test_generator_reproduces_the_stored_suites(argv, suite):
     sc, man = MS.build(MS.parse_args(argv))
     want_sc, want_man = _stored(suite)
@@ -154,3 +167,66 @@ def test_serpentine_order_spec():
         "columns_from_left": [1, 2], "rows_from_top": [2, 3], "order": "serpentine"}
     with pytest.raises(ValueError):
         MS.subset_spec(["C1R4"], "zigzag")
+
+
+def test_strip_suites_fields_and_options_only_when_given():
+    """The strip suites = the layout suites' scene, start and task fields with the order "strips" and its strip width
+    (written right after "order", in the spec and in params); quick = the whole first strip (columns 1-2 x rows 2-4 from
+    the bottom), full = rows 2-4 x all columns. Every other suite carries no strip_columns."""
+    lay, _ = MS.build(MS.parse_args(LAYOUT))
+    quick_lay, _ = MS.build(MS.parse_args(C12R24_LAYOUT))
+    quick, qman = MS.build(MS.parse_args(STRIP_QUICK))
+    full, fman = MS.build(MS.parse_args(STRIP))
+    assert full["scan_targets"] == {"columns": "all", "rows_from_bottom": [2, 3, 4], "order": "strips", "strip_columns": 2}
+    assert list(full["scan_targets"]) == ["columns", "rows_from_bottom", "order", "strip_columns"]
+    assert quick["scan_targets"] == {"columns_from_left": [1, 2], "rows_from_bottom": [2, 3, 4], "order": "strips",
+                                     "strip_columns": 2}
+    assert full["target_boxes"] == R234_BOXES and quick["target_boxes"] == C12R234_BOXES
+    assert qman["scenario_ids"] == ["scanroom6x5_c12r234_strip_L0_0000"]
+    assert fman["scenario_ids"] == ["scanroom6x5_r234_strip_L0_0000"]
+    for sc, ref in ((full, lay), (quick, quick_lay)):
+        assert set(sc) == set(ref)
+        for k in ("boxes", "barcodes", "target", "robot_init", "head_views", "phase1_view", "wall_layout", "scene_usd",
+                  "label_margin", "background", "table", "task2_start"):
+            assert sc[k] == ref[k], k
+        assert sc["phase1_view"] == "obs_pose" and sc["head_views"] == "upright"
+        params = sc["factor"]["params"]
+        assert params["order"] == "strips" and params["strip_columns"] == 2 and params["wall_layout"] is True
+        assert list(params).index("strip_columns") == list(params).index("order") + 1
+        assert ("order strips (strips of 2 columns from the left; inside a strip rows from the top, the first row left "
+                "to right, the next right to left, alternating); the robot may walk back to an upright observation "
+                "pose") in sc["factor"]["note"]
+    for argv in ([], SUB4, R234, LAYOUT, C12R24_LAYOUT):            # absent unless given
+        sc, _ = MS.build(MS.parse_args(argv))
+        assert "strip_columns" not in sc.get("scan_targets", {}) and "strip_columns" not in sc["factor"]["params"]
+        assert "strips" not in sc["factor"]["note"]
+
+
+def test_strip_options_errors():
+    def without(argv, flag, n):                                     # argv with flag and its n values removed
+        i = argv.index(flag)
+        return argv[:i] + argv[i + 1 + n:]
+    bad = [without(STRIP, "--strip_columns", 1),                    # strips needs a strip width
+           without(STRIP, "--wall_layout", 0),                      # strips needs the wall layout
+           STRIP[:STRIP.index("--strip_columns") + 1] + ["4"] + STRIP[STRIP.index("--strip_columns") + 2:],  # 6 % 4
+           STRIP[:STRIP.index("--strip_columns") + 1] + ["0"] + STRIP[STRIP.index("--strip_columns") + 2:],
+           LAYOUT + ["--strip_columns", "2"],                       # a strip width with another order
+           ["--strip_columns", "2"]]                                # no subset task
+    for argv in bad:
+        with pytest.raises(SystemExit):
+            MS.parse_args(argv)
+    ok = STRIP[:STRIP.index("--strip_columns") + 1] + ["3"] + STRIP[STRIP.index("--strip_columns") + 2:]
+    assert MS.build(MS.parse_args(ok))[0]["scan_targets"]["strip_columns"] == 3
+
+
+def test_strip_spec():
+    assert MS.subset_spec(C12R234_BOXES, "strips", rows_from="bottom", strip_columns=2) == {
+        "columns_from_left": [1, 2], "rows_from_bottom": [2, 3, 4], "order": "strips", "strip_columns": 2}
+    assert MS.subset_spec(["C1R4"], "rows") == MS.subset_spec(["C1R4"], "rows", strip_columns=None)
+    for order, w in (("strips", None), ("strips", 4), ("strips", 0), ("strips", True), ("strips", 2.0),
+                     ("serpentine", 2), ("rows", 1)):
+        assert MS.strip_error(order, w)
+        with pytest.raises(ValueError):
+            MS.subset_spec(C12R234_BOXES, order, rows_from="bottom", strip_columns=w)
+    for w in (1, 2, 3, 6):
+        assert MS.strip_error("strips", w) is None

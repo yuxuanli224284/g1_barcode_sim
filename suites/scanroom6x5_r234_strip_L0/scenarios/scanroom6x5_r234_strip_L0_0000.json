@@ -1,0 +1,979 @@
+{
+ "id": "scanroom6x5_r234_strip_L0_0000",
+ "suite": "scanroom6x5_r234_strip_L0",
+ "task": 3,
+ "seed": 0,
+ "index": 0,
+ "level": "L0",
+ "factors_varied": [],
+ "factor": {
+  "note": "scan room reconstruction (2026-11-17) with our labels: 6 x 5 boxes 0.2 x 0.4 x 0.25 m (w x d x h), front x = 1.3 m, centred on y = 0; one backed code128 label per box at the photographed paper label (position, size, rotation). Robot start: facing the wall squarely, root 0.6 m from the box faces, yaw 0 (scripts/testsuite/make_scanroom_suite.py). Task: scan only the labels of boxes C1R4, C2R4, C3R4, C4R4, C5R4, C6R4, C1R3, C2R3, C3R3, C4R3, C5R3, C6R3, C1R2, C2R2, C3R2, C4R2, C5R2, C6R2 (all columns, rows [2, 3, 4] from the bottom of the wall), order strips (strips of 2 columns from the left; inside a strip rows from the top, the first row left to right, the next right to left, alternating); the robot may walk back to an upright observation pose (no lean-back head views); the wall layout (6 x 5 boxes of 0.2 x 0.25 m on the floor) is given to the agent.",
+  "params": {
+   "robot_dist": 0.6,
+   "seed": 0,
+   "lateral": 0.0,
+   "targets": [
+    "C1R4",
+    "C2R4",
+    "C3R4",
+    "C4R4",
+    "C5R4",
+    "C6R4",
+    "C1R3",
+    "C2R3",
+    "C3R3",
+    "C4R3",
+    "C5R3",
+    "C6R3",
+    "C1R2",
+    "C2R2",
+    "C3R2",
+    "C4R2",
+    "C5R2",
+    "C6R2"
+   ],
+   "order": "strips",
+   "strip_columns": 2,
+   "rows_from": "bottom",
+   "columns": "all",
+   "head_views": "upright",
+   "phase1_view": "obs_pose",
+   "wall_layout": true
+  }
+ },
+ "background": {
+  "type": "empty",
+  "light_scale": 1.0
+ },
+ "scene_usd": {
+  "usd": "assets/scenes/scan_room_20261117/scene.usda",
+  "translate": [
+   1.3,
+   0.0,
+   0.0
+  ],
+  "rotate_z_deg": -90.0
+ },
+ "label_margin": -0.002,
+ "table": null,
+ "robot_init": {
+  "dist_to_table": 0.6,
+  "lateral_offset": 0.0,
+  "yaw_deg": 0.0
+ },
+ "boxes": [
+  {
+   "id": "C1R1",
+   "size_wdh": [
+    0.2,
+    0.4,
+    0.25
+   ],
+   "appearance": "invisible",
+   "setback": 0.0,
+   "y_center": 0.5,
+   "on": null
+  },
+  {
+   "id": "C2R1",
+   "size_wdh": [
+    0.2,
+    0.4,
+    0.25
+   ],
+   "appearance": "invisible",
+   "setback": 0.0,
+   "y_center": 0.3,
+   "on": null
+  },
+  {
+   "id": "C3R1",
+   "size_wdh": [
+    0.2,
+    0.4,
+    0.25
+   ],
+   "appearance": "invisible",
+   "setback": 0.0,
+   "y_center": 0.1,
+   "on": null
+  },
+  {
+   "id": "C4R1",
+   "size_wdh": [
+    0.2,
+    0.4,
+    0.25
+   ],
+   "appearance": "invisible",
+   "setback": 0.0,
+   "y_center": -0.1,
+   "on": null
+  },
+  {
+   "id": "C5R1",
+   "size_wdh": [
+    0.2,
+    0.4,
+    0.25
+   ],
+   "appearance": "invisible",
+   "setback": 0.0,
+   "y_center": -0.3,
+   "on": null
+  },
+  {
+   "id": "C6R1",
+   "size_wdh": [
+    0.2,
+    0.4,
+    0.25
+   ],
+   "appearance": "invisible",
+   "setback": 0.0,
+   "y_center": -0.5,
+   "on": null
+  },
+  {
+   "id": "C1R2",
+   "size_wdh": [
+    0.2,
+    0.4,
+    0.25
+   ],
+   "appearance": "invisible",
+   "setback": 0.0,
+   "y_center": 0.5,
+   "on": "C1R1"
+  },
+  {
+   "id": "C2R2",
+   "size_wdh": [
+    0.2,
+    0.4,
+    0.25
+   ],
+   "appearance": "invisible",
+   "setback": 0.0,
+   "y_center": 0.3,
+   "on": "C2R1"
+  },
+  {
+   "id": "C3R2",
+   "size_wdh": [
+    0.2,
+    0.4,
+    0.25
+   ],
+   "appearance": "invisible",
+   "setback": 0.0,
+   "y_center": 0.1,
+   "on": "C3R1"
+  },
+  {
+   "id": "C4R2",
+   "size_wdh": [
+    0.2,
+    0.4,
+    0.25
+   ],
+   "appearance": "invisible",
+   "setback": 0.0,
+   "y_center": -0.1,
+   "on": "C4R1"
+  },
+  {
+   "id": "C5R2",
+   "size_wdh": [
+    0.2,
+    0.4,
+    0.25
+   ],
+   "appearance": "invisible",
+   "setback": 0.0,
+   "y_center": -0.3,
+   "on": "C5R1"
+  },
+  {
+   "id": "C6R2",
+   "size_wdh": [
+    0.2,
+    0.4,
+    0.25
+   ],
+   "appearance": "invisible",
+   "setback": 0.0,
+   "y_center": -0.5,
+   "on": "C6R1"
+  },
+  {
+   "id": "C1R3",
+   "size_wdh": [
+    0.2,
+    0.4,
+    0.25
+   ],
+   "appearance": "invisible",
+   "setback": 0.0,
+   "y_center": 0.5,
+   "on": "C1R2"
+  },
+  {
+   "id": "C2R3",
+   "size_wdh": [
+    0.2,
+    0.4,
+    0.25
+   ],
+   "appearance": "invisible",
+   "setback": 0.0,
+   "y_center": 0.3,
+   "on": "C2R2"
+  },
+  {
+   "id": "C3R3",
+   "size_wdh": [
+    0.2,
+    0.4,
+    0.25
+   ],
+   "appearance": "invisible",
+   "setback": 0.0,
+   "y_center": 0.1,
+   "on": "C3R2"
+  },
+  {
+   "id": "C4R3",
+   "size_wdh": [
+    0.2,
+    0.4,
+    0.25
+   ],
+   "appearance": "invisible",
+   "setback": 0.0,
+   "y_center": -0.1,
+   "on": "C4R2"
+  },
+  {
+   "id": "C5R3",
+   "size_wdh": [
+    0.2,
+    0.4,
+    0.25
+   ],
+   "appearance": "invisible",
+   "setback": 0.0,
+   "y_center": -0.3,
+   "on": "C5R2"
+  },
+  {
+   "id": "C6R3",
+   "size_wdh": [
+    0.2,
+    0.4,
+    0.25
+   ],
+   "appearance": "invisible",
+   "setback": 0.0,
+   "y_center": -0.5,
+   "on": "C6R2"
+  },
+  {
+   "id": "C1R4",
+   "size_wdh": [
+    0.2,
+    0.4,
+    0.25
+   ],
+   "appearance": "invisible",
+   "setback": 0.0,
+   "y_center": 0.5,
+   "on": "C1R3"
+  },
+  {
+   "id": "C2R4",
+   "size_wdh": [
+    0.2,
+    0.4,
+    0.25
+   ],
+   "appearance": "invisible",
+   "setback": 0.0,
+   "y_center": 0.3,
+   "on": "C2R3"
+  },
+  {
+   "id": "C3R4",
+   "size_wdh": [
+    0.2,
+    0.4,
+    0.25
+   ],
+   "appearance": "invisible",
+   "setback": 0.0,
+   "y_center": 0.1,
+   "on": "C3R3"
+  },
+  {
+   "id": "C4R4",
+   "size_wdh": [
+    0.2,
+    0.4,
+    0.25
+   ],
+   "appearance": "invisible",
+   "setback": 0.0,
+   "y_center": -0.1,
+   "on": "C4R3"
+  },
+  {
+   "id": "C5R4",
+   "size_wdh": [
+    0.2,
+    0.4,
+    0.25
+   ],
+   "appearance": "invisible",
+   "setback": 0.0,
+   "y_center": -0.3,
+   "on": "C5R3"
+  },
+  {
+   "id": "C6R4",
+   "size_wdh": [
+    0.2,
+    0.4,
+    0.25
+   ],
+   "appearance": "invisible",
+   "setback": 0.0,
+   "y_center": -0.5,
+   "on": "C6R3"
+  },
+  {
+   "id": "C1R5",
+   "size_wdh": [
+    0.2,
+    0.4,
+    0.25
+   ],
+   "appearance": "invisible",
+   "setback": 0.0,
+   "y_center": 0.5,
+   "on": "C1R4"
+  },
+  {
+   "id": "C2R5",
+   "size_wdh": [
+    0.2,
+    0.4,
+    0.25
+   ],
+   "appearance": "invisible",
+   "setback": 0.0,
+   "y_center": 0.3,
+   "on": "C2R4"
+  },
+  {
+   "id": "C3R5",
+   "size_wdh": [
+    0.2,
+    0.4,
+    0.25
+   ],
+   "appearance": "invisible",
+   "setback": 0.0,
+   "y_center": 0.1,
+   "on": "C3R4"
+  },
+  {
+   "id": "C4R5",
+   "size_wdh": [
+    0.2,
+    0.4,
+    0.25
+   ],
+   "appearance": "invisible",
+   "setback": 0.0,
+   "y_center": -0.1,
+   "on": "C4R4"
+  },
+  {
+   "id": "C5R5",
+   "size_wdh": [
+    0.2,
+    0.4,
+    0.25
+   ],
+   "appearance": "invisible",
+   "setback": 0.0,
+   "y_center": -0.3,
+   "on": "C5R4"
+  },
+  {
+   "id": "C6R5",
+   "size_wdh": [
+    0.2,
+    0.4,
+    0.25
+   ],
+   "appearance": "invisible",
+   "setback": 0.0,
+   "y_center": -0.5,
+   "on": "C6R4"
+  }
+ ],
+ "barcodes": [
+  {
+   "type": "code128",
+   "width": 0.07961,
+   "label_backing": true,
+   "aspect": 0.26586,
+   "rot_deg": -0.578,
+   "box_id": "C1R1",
+   "face": "-x",
+   "u": -0.03092,
+   "v": 0.10442,
+   "content": "5WSJKBCAF",
+   "content_id": "SCANROOM-0000-C1R1",
+   "photo_label_size_m": [
+    0.09961,
+    0.04116
+   ]
+  },
+  {
+   "type": "code128",
+   "width": 0.07981,
+   "label_backing": true,
+   "aspect": 0.25882,
+   "rot_deg": -3.506,
+   "box_id": "C2R1",
+   "face": "-x",
+   "u": -0.0375,
+   "v": 0.09677,
+   "content": "4W7SV9ZWT",
+   "content_id": "SCANROOM-0000-C2R1",
+   "photo_label_size_m": [
+    0.09981,
+    0.04066
+   ]
+  },
+  {
+   "type": "code128",
+   "width": 0.07773,
+   "label_backing": true,
+   "aspect": 0.34311,
+   "rot_deg": 1.364,
+   "box_id": "C3R1",
+   "face": "-x",
+   "u": -0.04019,
+   "v": 0.09304,
+   "content": "T7J4XAN5T",
+   "content_id": "SCANROOM-0000-C3R1",
+   "photo_label_size_m": [
+    0.09773,
+    0.04667
+   ]
+  },
+  {
+   "type": "code128",
+   "width": 0.10145,
+   "label_backing": true,
+   "aspect": 0.20771,
+   "rot_deg": 1.506,
+   "box_id": "C4R1",
+   "face": "-x",
+   "u": -0.03929,
+   "v": 0.09379,
+   "content": "B2Z5FC5AT",
+   "content_id": "SCANROOM-0000-C4R1",
+   "photo_label_size_m": [
+    0.12145,
+    0.04107
+   ]
+  },
+  {
+   "type": "code128",
+   "width": 0.10377,
+   "label_backing": true,
+   "aspect": 0.2655,
+   "rot_deg": 0.52,
+   "box_id": "C5R1",
+   "face": "-x",
+   "u": -0.03812,
+   "v": 0.09106,
+   "content": "CKRPNAADA",
+   "content_id": "SCANROOM-0000-C5R1",
+   "photo_label_size_m": [
+    0.12377,
+    0.04755
+   ]
+  },
+  {
+   "type": "code128",
+   "width": 0.09617,
+   "label_backing": true,
+   "aspect": 0.24167,
+   "rot_deg": 3.207,
+   "box_id": "C6R1",
+   "face": "-x",
+   "u": -0.042,
+   "v": 0.1011,
+   "content": "XSWJV2NQ9",
+   "content_id": "SCANROOM-0000-C6R1",
+   "photo_label_size_m": [
+    0.11617,
+    0.04324
+   ]
+  },
+  {
+   "type": "code128",
+   "width": 0.1053,
+   "label_backing": true,
+   "aspect": 0.20099,
+   "rot_deg": 0.0,
+   "box_id": "C1R2",
+   "face": "-x",
+   "u": -0.02691,
+   "v": 0.10442,
+   "content": "39NX8W4YY",
+   "content_id": "SCANROOM-0000-C1R2",
+   "photo_label_size_m": [
+    0.1253,
+    0.04116
+   ]
+  },
+  {
+   "type": "code128",
+   "width": 0.10389,
+   "label_backing": true,
+   "aspect": 0.23713,
+   "rot_deg": -0.285,
+   "box_id": "C2R2",
+   "face": "-x",
+   "u": -0.02207,
+   "v": 0.10261,
+   "content": "N6EUZ5SNK",
+   "content_id": "SCANROOM-0000-C2R2",
+   "photo_label_size_m": [
+    0.12389,
+    0.04463
+   ]
+  },
+  {
+   "type": "code128",
+   "width": 0.10438,
+   "label_backing": true,
+   "aspect": 0.24754,
+   "rot_deg": -1.326,
+   "box_id": "C3R2",
+   "face": "-x",
+   "u": -0.01945,
+   "v": 0.09976,
+   "content": "PRZ6C7TMX",
+   "content_id": "SCANROOM-0000-C3R2",
+   "photo_label_size_m": [
+    0.12438,
+    0.04584
+   ]
+  },
+  {
+   "type": "code128",
+   "width": 0.0788,
+   "label_backing": true,
+   "aspect": 0.24312,
+   "rot_deg": 0.0,
+   "box_id": "C4R2",
+   "face": "-x",
+   "u": -0.04418,
+   "v": 0.09739,
+   "content": "UJLZVSL2N",
+   "content_id": "SCANROOM-0000-C4R2",
+   "photo_label_size_m": [
+    0.0988,
+    0.03916
+   ]
+  },
+  {
+   "type": "code128",
+   "width": 0.10134,
+   "label_backing": true,
+   "aspect": 0.22152,
+   "rot_deg": 1.953,
+   "box_id": "C5R2",
+   "face": "-x",
+   "u": -0.03496,
+   "v": 0.09779,
+   "content": "L6JHYVBCN",
+   "content_id": "SCANROOM-0000-C5R2",
+   "photo_label_size_m": [
+    0.12134,
+    0.04245
+   ]
+  },
+  {
+   "type": "code128",
+   "width": 0.09103,
+   "label_backing": true,
+   "aspect": 0.27466,
+   "rot_deg": 0.568,
+   "box_id": "C6R2",
+   "face": "-x",
+   "u": -0.0406,
+   "v": 0.09778,
+   "content": "4N3LH36CB",
+   "content_id": "SCANROOM-0000-C6R2",
+   "photo_label_size_m": [
+    0.11103,
+    0.045
+   ]
+  },
+  {
+   "type": "code128",
+   "width": 0.0796,
+   "label_backing": true,
+   "aspect": 0.24067,
+   "rot_deg": 0.0,
+   "box_id": "C1R3",
+   "face": "-x",
+   "u": -0.03333,
+   "v": 0.10542,
+   "content": "XLUE5Q63Y",
+   "content_id": "SCANROOM-0000-C1R3",
+   "photo_label_size_m": [
+    0.0996,
+    0.03916
+   ]
+  },
+  {
+   "type": "code128",
+   "width": 0.08281,
+   "label_backing": true,
+   "aspect": 0.24345,
+   "rot_deg": 0.0,
+   "box_id": "C2R3",
+   "face": "-x",
+   "u": -0.03494,
+   "v": 0.10492,
+   "content": "H2BUN9G8C",
+   "content_id": "SCANROOM-0000-C2R3",
+   "photo_label_size_m": [
+    0.10281,
+    0.04016
+   ]
+  },
+  {
+   "type": "code128",
+   "width": 0.08522,
+   "label_backing": true,
+   "aspect": 0.22479,
+   "rot_deg": 0.0,
+   "box_id": "C3R3",
+   "face": "-x",
+   "u": -0.03695,
+   "v": 0.10542,
+   "content": "VU6K6X6G2",
+   "content_id": "SCANROOM-0000-C3R3",
+   "photo_label_size_m": [
+    0.10522,
+    0.03916
+   ]
+  },
+  {
+   "type": "code128",
+   "width": 0.08683,
+   "label_backing": true,
+   "aspect": 0.25532,
+   "rot_deg": 0.0,
+   "box_id": "C4R3",
+   "face": "-x",
+   "u": -0.04659,
+   "v": 0.10191,
+   "content": "8BMWDSW27",
+   "content_id": "SCANROOM-0000-C4R3",
+   "photo_label_size_m": [
+    0.10683,
+    0.04217
+   ]
+  },
+  {
+   "type": "code128",
+   "width": 0.08874,
+   "label_backing": true,
+   "aspect": 0.3318,
+   "rot_deg": 0.955,
+   "box_id": "C5R3",
+   "face": "-x",
+   "u": -0.04564,
+   "v": 0.0996,
+   "content": "PQR8GRBP8",
+   "content_id": "SCANROOM-0000-C5R3",
+   "photo_label_size_m": [
+    0.10874,
+    0.04944
+   ]
+  },
+  {
+   "type": "code128",
+   "width": 0.09099,
+   "label_backing": true,
+   "aspect": 0.21624,
+   "rot_deg": 2.852,
+   "box_id": "C6R3",
+   "face": "-x",
+   "u": -0.04458,
+   "v": 0.10316,
+   "content": "VM9V8AQ42",
+   "content_id": "SCANROOM-0000-C6R3",
+   "photo_label_size_m": [
+    0.11099,
+    0.03968
+   ]
+  },
+  {
+   "type": "code128",
+   "width": 0.08602,
+   "label_backing": true,
+   "aspect": 0.21102,
+   "rot_deg": 0.0,
+   "box_id": "C1R4",
+   "face": "-x",
+   "u": -0.04699,
+   "v": 0.10592,
+   "content": "PRPSH3CPK",
+   "content_id": "SCANROOM-0000-C1R4",
+   "photo_label_size_m": [
+    0.10602,
+    0.03815
+   ]
+  },
+  {
+   "type": "code128",
+   "width": 0.08602,
+   "label_backing": true,
+   "aspect": 0.176,
+   "rot_deg": 0.0,
+   "box_id": "C2R4",
+   "face": "-x",
+   "u": -0.04699,
+   "v": 0.10743,
+   "content": "ZZY77FDEZ",
+   "content_id": "SCANROOM-0000-C2R4",
+   "photo_label_size_m": [
+    0.10602,
+    0.03514
+   ]
+  },
+  {
+   "type": "code128",
+   "width": 0.10851,
+   "label_backing": true,
+   "aspect": 0.12102,
+   "rot_deg": 0.0,
+   "box_id": "C3R4",
+   "face": "-x",
+   "u": -0.03574,
+   "v": 0.10843,
+   "content": "97X85AD5C",
+   "content_id": "SCANROOM-0000-C3R4",
+   "photo_label_size_m": [
+    0.12851,
+    0.03313
+   ]
+  },
+  {
+   "type": "code128",
+   "width": 0.08683,
+   "label_backing": true,
+   "aspect": 0.20907,
+   "rot_deg": 0.0,
+   "box_id": "C4R4",
+   "face": "-x",
+   "u": -0.04659,
+   "v": 0.10592,
+   "content": "948MES9M6",
+   "content_id": "SCANROOM-0000-C4R4",
+   "photo_label_size_m": [
+    0.10683,
+    0.03815
+   ]
+  },
+  {
+   "type": "code128",
+   "width": 0.10966,
+   "label_backing": true,
+   "aspect": 0.19293,
+   "rot_deg": 1.013,
+   "box_id": "C5R4",
+   "face": "-x",
+   "u": -0.03518,
+   "v": 0.10383,
+   "content": "N4HRLH63E",
+   "content_id": "SCANROOM-0000-C5R4",
+   "photo_label_size_m": [
+    0.12966,
+    0.04116
+   ]
+  },
+  {
+   "type": "code128",
+   "width": 0.12006,
+   "label_backing": true,
+   "aspect": 0.16033,
+   "rot_deg": 0.93,
+   "box_id": "C6R4",
+   "face": "-x",
+   "u": -0.02998,
+   "v": 0.10483,
+   "content": "79JPTXQE7",
+   "content_id": "SCANROOM-0000-C6R4",
+   "photo_label_size_m": [
+    0.14006,
+    0.03925
+   ]
+  },
+  {
+   "type": "code128",
+   "width": 0.08631,
+   "label_backing": true,
+   "aspect": 0.21607,
+   "rot_deg": -1.27,
+   "box_id": "C1R5",
+   "face": "-x",
+   "u": -0.04685,
+   "v": 0.09798,
+   "content": "YB4ZFVSA7",
+   "content_id": "SCANROOM-0000-C1R5",
+   "photo_label_size_m": [
+    0.10631,
+    0.03865
+   ]
+  },
+  {
+   "type": "code128",
+   "width": 0.08473,
+   "label_backing": true,
+   "aspect": 0.23038,
+   "rot_deg": -1.072,
+   "box_id": "C2R5",
+   "face": "-x",
+   "u": -0.04228,
+   "v": 0.10449,
+   "content": "ZKAC2ES67",
+   "content_id": "SCANROOM-0000-C2R5",
+   "photo_label_size_m": [
+    0.10473,
+    0.03952
+   ]
+  },
+  {
+   "type": "code128",
+   "width": 0.08924,
+   "label_backing": true,
+   "aspect": 0.20342,
+   "rot_deg": 0.0,
+   "box_id": "C3R5",
+   "face": "-x",
+   "u": -0.04538,
+   "v": 0.10592,
+   "content": "JCR4VCWMH",
+   "content_id": "SCANROOM-0000-C3R5",
+   "photo_label_size_m": [
+    0.10924,
+    0.03815
+   ]
+  },
+  {
+   "type": "code128",
+   "width": 0.08522,
+   "label_backing": true,
+   "aspect": 0.23657,
+   "rot_deg": 0.0,
+   "box_id": "C4R5",
+   "face": "-x",
+   "u": -0.03855,
+   "v": 0.10291,
+   "content": "P58ET2JJH",
+   "content_id": "SCANROOM-0000-C4R5",
+   "photo_label_size_m": [
+    0.10522,
+    0.04016
+   ]
+  },
+  {
+   "type": "code128",
+   "width": 0.11444,
+   "label_backing": true,
+   "aspect": 0.20011,
+   "rot_deg": 1.05,
+   "box_id": "C5R5",
+   "face": "-x",
+   "u": -0.03279,
+   "v": 0.10323,
+   "content": "G6GHED2K3",
+   "content_id": "SCANROOM-0000-C5R5",
+   "photo_label_size_m": [
+    0.13444,
+    0.0429
+   ]
+  },
+  {
+   "type": "code128",
+   "width": 0.11976,
+   "label_backing": true,
+   "aspect": 0.21026,
+   "rot_deg": 0.0,
+   "box_id": "C6R5",
+   "face": "-x",
+   "u": -0.03012,
+   "v": 0.10241,
+   "content": "U5T23BTQK",
+   "content_id": "SCANROOM-0000-C6R5",
+   "photo_label_size_m": [
+    0.13976,
+    0.04518
+   ]
+  }
+ ],
+ "target": "all",
+ "task2_start": null,
+ "target_boxes": [
+  "C1R4",
+  "C2R4",
+  "C3R4",
+  "C4R4",
+  "C5R4",
+  "C6R4",
+  "C1R3",
+  "C2R3",
+  "C3R3",
+  "C4R3",
+  "C5R3",
+  "C6R3",
+  "C1R2",
+  "C2R2",
+  "C3R2",
+  "C4R2",
+  "C5R2",
+  "C6R2"
+ ],
+ "scan_targets": {
+  "columns": "all",
+  "rows_from_bottom": [
+   2,
+   3,
+   4
+  ],
+  "order": "strips",
+  "strip_columns": 2
+ },
+ "head_views": "upright",
+ "phase1_view": "obs_pose",
+ "wall_layout": {
+  "columns": 6,
+  "rows": 5,
+  "box_w": 0.2,
+  "box_h": 0.25,
+  "base": "floor"
+ }
+}

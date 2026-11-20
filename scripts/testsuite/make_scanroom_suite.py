@@ -15,14 +15,28 @@ Subset suites (same boxes and labels; a task-3 episode that scans only some boxe
         --targets C1R4,C2R4,C3R4,C4R4,C5R4,C6R4,C1R3,C2R3,C3R3,C4R3,C5R3,C6R3,C1R2,C2R2,C3R2,C4R2,C5R2,C6R2 \
         --order serpentine --rows_from bottom --all_columns --head_views upright --phase1_view obs_pose --wall_layout
 
+    python scripts/testsuite/make_scanroom_suite.py --suite scanroom6x5_c12r234_strip_L0 --robot_dist 0.60 --lateral 0.0 \
+        --targets C1R4,C2R4,C1R3,C2R3,C1R2,C2R2 --order strips --strip_columns 2 --rows_from bottom \
+        --head_views upright --phase1_view obs_pose --wall_layout
+
+    python scripts/testsuite/make_scanroom_suite.py --suite scanroom6x5_r234_strip_L0 --robot_dist 0.60 --lateral 0.0 \
+        --targets C1R4,C2R4,C3R4,C4R4,C5R4,C6R4,C1R3,C2R3,C3R3,C4R3,C5R3,C6R3,C1R2,C2R2,C3R2,C4R2,C5R2,C6R2 \
+        --order strips --strip_columns 2 --rows_from bottom --all_columns --head_views upright --phase1_view obs_pose \
+        --wall_layout
+
   - "target_boxes": the GT box ids (evaluation only; the agent never sees box ids);
   - "scan_targets": the same boxes as the task instruction in robot terms, derived from the ids (C<col>R<row>, column 1
     = the robot's left, row 1 = the bottom row): {<columns>, <rows>, "order": ...}, with <columns> =
     "columns_from_left": [...] or, with --all_columns, "columns": "all" (the targets must then cover every column), and
     <rows> = "rows_from_top": [...] (--rows_from top, the default) or "rows_from_bottom": [...] (--rows_from bottom).
     The targets must form a full block of columns x rows (otherwise no such instruction exists). order: "rows" (rows
-    from the top, left to right inside a row), "columns" (the default task-3 order) or "serpentine" (rows from the top,
-    the top requested row left to right, the next right to left, alternating).
+    from the top, left to right inside a row), "columns" (the default task-3 order), "serpentine" (rows from the top,
+    the top requested row left to right, the next right to left, alternating) or "strips" (--strip_columns N, written
+    as "strip_columns": N after "order"): the wall is worked in strips of N columns from its left end (strip 1 =
+    columns 1..N), strip after strip; inside a strip the requested rows go from the top, its first requested row left
+    to right, the next right to left, alternating, and every strip restarts with its top requested row left to right.
+    Strips are wall columns, so "strips" needs the wall layout (--wall_layout) and a wall that splits into whole strips
+    (COLS % N == 0).
   - "head_views" (--head_views upright): the agent takes upright head views only (no lean-back looks); absent = the
     camera model's default. "phase1_view" (--phase1_view start_pose | obs_pose): with obs_pose the robot may walk (also
     back) to an observation pose before planning its scans; absent = start_pose for a subset task. Both are written only
@@ -65,7 +79,7 @@ SUITE = "scanroom6x5_L0"
 SCENE_DIR = "assets/scenes/scan_room_20261117"
 COLS, ROWS = 6, 5
 BOX_W, BOX_D, BOX_H = 0.20, 0.40, 0.25          # scene_regularized.usda boxDimensionsMeters / its collider cubes
-ORDERS = ("columns", "rows", "serpentine")      # task-3 order rules (the agent's scan_order.ORDER_RULES)
+ORDERS = ("columns", "rows", "serpentine", "strips")   # task-3 order rules (the agent's scan_order.ORDER_RULES)
 
 
 def wall_layout() -> dict:
@@ -88,11 +102,28 @@ def label_rect(pts_asset, col, row):
     return float(c[0]), float(c[1]), math.degrees(a), float(w), float(h)
 
 
-def subset_spec(targets: list[str], order: str, rows_from: str = "top", columns: str = "list") -> dict:
+def strip_error(order: str, strip_columns: int | None) -> str | None:
+    """Why (order, strip_columns) is no valid pair, or None. strip_columns belongs to the order "strips" only and is
+    required there: a whole number of columns >= 1 into which the wall's COLS columns split without a remainder (no
+    instruction covers a partial strip)."""
+    if order != "strips":
+        return None if strip_columns is None else f"strip_columns applies to the order strips only, not {order!r}"
+    if strip_columns is None:
+        return "the order strips needs strip_columns (the number of columns per strip)"
+    if isinstance(strip_columns, bool) or not isinstance(strip_columns, int) or strip_columns < 1:
+        return f"strip_columns must be a whole number of columns >= 1, got {strip_columns!r}"
+    if COLS % strip_columns:
+        return f"a wall of {COLS} columns does not split into strips of {strip_columns} columns"
+    return None
+
+
+def subset_spec(targets: list[str], order: str, rows_from: str = "top", columns: str = "list",
+                strip_columns: int | None = None) -> dict:
     """Robot-terms target spec of a block of boxes C<col>R<row>: columns counted from the robot's left (C1 = world
     y +0.5 = left), rows from the top (rows_from "top": R5 = row 1) or from the bottom (rows_from "bottom": R1 = row 1).
     columns "list" names the columns ("columns_from_left"); columns "all" writes "columns": "all" and requires the
-    targets to cover every column 1..COLS. Key order: columns, rows, order."""
+    targets to cover every column 1..COLS. Key order: columns, rows, order (then "strip_columns" for the order
+    "strips", which requires it; strip_error)."""
     if rows_from not in ("top", "bottom"):
         raise ValueError(f"rows_from must be top | bottom, got {rows_from!r}")
     if columns not in ("list", "all"):
@@ -112,8 +143,12 @@ def subset_spec(targets: list[str], order: str, rows_from: str = "top", columns:
         raise ValueError(f"order must be one of {' | '.join(ORDERS)}, got {order!r}")
     if columns == "all" and cols != list(range(1, COLS + 1)):
         raise ValueError(f"targets {targets} cover columns {cols}, not all {COLS} columns (no \"all columns\" instruction)")
+    err = strip_error(order, strip_columns)
+    if err:
+        raise ValueError(err)
     col_part = {"columns": "all"} if columns == "all" else {"columns_from_left": cols}
-    return {**col_part, f"rows_from_{rows_from}": rows, "order": order}
+    strips = {"strip_columns": strip_columns} if order == "strips" else {}
+    return {**col_part, f"rows_from_{rows_from}": rows, "order": order, **strips}
 
 
 def task_note(targets: list[str], spec: dict, head_views: str | None, phase1_view: str | None,
@@ -130,6 +165,9 @@ def task_note(targets: list[str], spec: dict, head_views: str | None, phase1_vie
     order = spec["order"]
     if order == "serpentine":
         order += " (rows from the top, left to right, then right to left, alternating)"
+    elif order == "strips":
+        order += (f" (strips of {spec['strip_columns']} columns from the left; inside a strip rows from the top, the "
+                  f"first row left to right, the next right to left, alternating)")
     given = ""
     if layout is not None:
         given = (f"; the wall layout ({layout['columns']} x {layout['rows']} boxes of {layout['box_w']} x "
@@ -173,8 +211,11 @@ def build(a) -> tuple[dict, dict]:
     targets = [t.strip() for t in a.targets.split(",")] if a.targets else None
     note = ""
     if targets:
-        spec = subset_spec(targets, a.order, rows_from=a.rows_from, columns="all" if a.all_columns else "list")
+        spec = subset_spec(targets, a.order, rows_from=a.rows_from, columns="all" if a.all_columns else "list",
+                           strip_columns=a.strip_columns)
         params.update(lateral=a.lateral, targets=targets, order=a.order)
+        if a.strip_columns is not None:
+            params["strip_columns"] = a.strip_columns
         # the new options enter params only when they differ from the defaults: the existing suites stay byte-identical
         if a.rows_from != "top":
             params["rows_from"] = a.rows_from
@@ -224,6 +265,9 @@ def parse_args(argv=None):
     ap.add_argument("--lateral", type=float, default=0.0, help="root start y (m, + = the robot's left of the wall centre)")
     ap.add_argument("--targets", default=None, help="comma-separated box ids C<col>R<row> to scan (subset task)")
     ap.add_argument("--order", default="columns", choices=list(ORDERS), help="scan order of a subset task")
+    ap.add_argument("--strip_columns", type=int, default=None,
+                    help="subset task with --order strips (required there, an error otherwise): columns per strip; the "
+                         "wall's columns must split into whole strips")
     ap.add_argument("--rows_from", default="top", choices=["top", "bottom"],
                     help="subset task: count the target rows from the top (default) or from the bottom of the wall")
     ap.add_argument("--all_columns", action="store_true",
@@ -238,13 +282,19 @@ def parse_args(argv=None):
     ap.add_argument("--seed", type=int, default=0)
     a = ap.parse_args(argv)
     if not a.targets:
-        given = [f"--{k}" for k, v in (("order", a.order != "columns"), ("rows_from", a.rows_from != "top"),
+        given = [f"--{k}" for k, v in (("order", a.order != "columns"), ("strip_columns", a.strip_columns is not None),
+                                       ("rows_from", a.rows_from != "top"),
                                        ("all_columns", a.all_columns), ("head_views", a.head_views is not None),
                                        ("phase1_view", a.phase1_view is not None), ("wall_layout", a.wall_layout)) if v]
         if given:
             ap.error(f"{', '.join(given)} appl{'ies' if len(given) == 1 else 'y'} to a subset task (--targets)")
     if a.wall_layout and a.phase1_view != "obs_pose":
         ap.error("--wall_layout needs --phase1_view obs_pose (the agent plans a wall layout from the observation pose)")
+    err = strip_error(a.order, a.strip_columns)
+    if err:
+        ap.error(f"--order / --strip_columns: {err}")
+    if a.order == "strips" and not a.wall_layout:
+        ap.error("--order strips needs --wall_layout (strips are columns of the wall layout given to the agent)")
     return a
 
 
