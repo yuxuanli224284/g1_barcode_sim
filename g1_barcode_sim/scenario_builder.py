@@ -14,6 +14,10 @@ collider added at runtime). Backgrounds are switched by visibility, lights resca
                                          /BC_mx|BC_px|BC_my|BC_py  barcode label on the -x/+x/-y/+y face
                                                            (texture; white plate if backed); further labels on the
                                                            same face: BC_mx_1, BC_mx_2, ...
+  /World/BarcodeScene/Scenario/SceneUSD                    external scene (scenario "scene_usd", e.g. the scan-room
+                                                           reconstruction with its own boxes, floor and wall): visual
+                                                           only, its physics / lights / cameras switched off; the boxes
+                                                           of such scenarios use appearance "invisible" (collider only)
 """
 from __future__ import annotations
 
@@ -32,13 +36,14 @@ from .testsuite.scenario import LABEL_PRIM
 from .testsuite.textures import APPEARANCE_COLOR, TAPE_COLOR, label_texture, printed_decal
 
 SCN = f"{ROOT}/Scenario"
-BACKGROUNDS = {"warehouse": f"{ROOT}/Background", "none": f"{ROOT}/BG_none", "white": f"{ROOT}/BG_white"}
+BACKGROUNDS = {"warehouse": f"{ROOT}/Background", "none": f"{ROOT}/BG_none", "white": f"{ROOT}/BG_white",
+               "empty": f"{ROOT}/BG_empty"}   # empty: nothing (a scenario scene_usd brings its own floor and walls)
 
 
 def author_extra_backgrounds(stage, cfg: dict):
     """`none`: neutral grey floor only. `white`: white floor + white walls around the work area (a box-shaped
     cyclorama). Visual only (the ground collider is shared); created invisible."""
-    for p in ("none", "white"):   # typed Xform parents: an implicit (typeless) parent is not Imageable and ignores MakeInvisible
+    for p in ("none", "white", "empty"):   # typed Xform parents: an implicit (typeless) parent is not Imageable and ignores MakeInvisible
         UsdGeom.Xform.Define(stage, BACKGROUNDS[p])
     n = cfg["none"]
     _cuboid(stage, f"{BACKGROUNDS['none']}/floor", (0, 0, -0.005), (n["floor_size"], n["floor_size"], 0.01), color=n["floor_color"],
@@ -49,7 +54,7 @@ def author_extra_backgrounds(stage, cfg: dict):
     for i, (off, s) in enumerate([((L / 2, 0), (0.05, L)), ((-L / 2, 0), (0.05, L)), ((0, L / 2), (L, 0.05)), ((0, -L / 2), (L, 0.05))]):
         _cuboid(stage, f"{BACKGROUNDS['white']}/wall{i}", (c[0] + off[0], c[1] + off[1], Hh / 2), (s[0], s[1], Hh),
                 color=w["color"], roughness=1.0, collider=False)
-    for p in ("none", "white"):
+    for p in ("none", "white", "empty"):
         UsdGeom.Imageable(stage.GetPrimAtPath(BACKGROUNDS[p])).MakeInvisible()
 
 
@@ -106,6 +111,28 @@ def _texture_material(stage, path, tex_path, roughness=0.85):
     return mat
 
 
+def author_scene_usd(stage, path: str, su: dict) -> str:
+    """Reference an external scene (scenario "scene_usd": usd path relative to the repository, translate, rotate_z_deg)
+    under `path`, visual only: its colliders and rigid bodies are disabled (the scenario's boxes and the ground plane
+    are the physics), its physics scene, lights and cameras deactivated (the scenario lighting applies)."""
+    import os
+    from pxr import UsdLux, UsdPhysics
+    from .config import PKG_ROOT
+    usd = os.path.join(PKG_ROOT, su["usd"])
+    if not os.path.exists(usd):
+        raise FileNotFoundError(usd)
+    xf = UsdGeom.Xform.Define(stage, path)
+    xf.GetPrim().GetReferences().AddReference(usd)
+    xf.AddTranslateOp().Set(Gf.Vec3d(*[float(v) for v in su["translate"]]))
+    xf.AddRotateZOp().Set(float(su["rotate_z_deg"]))
+    from pxr import Usd
+    for p in Usd.PrimRange(xf.GetPrim()):
+        if p.IsA(UsdPhysics.Scene) or p.HasAPI(UsdLux.LightAPI) or p.IsA(UsdGeom.Camera):
+            p.SetActive(False)
+    _disable_physics_below(xf.GetPrim())
+    return path
+
+
 def build_scenario(stage, layout: dict, fcfg: dict, bcfg_label: dict) -> dict:
     """Delete the previous scenario prims and author this one. Returns authored prim paths."""
     if stage.GetPrimAtPath(SCN).IsValid():
@@ -128,7 +155,9 @@ def build_scenario(stage, layout: dict, fcfg: dict, bcfg_label: dict) -> dict:
         d, w, h = b["size"]
         _cuboid(stage, f"{bp}/collider", (0, 0, 0), b["size"], collider=True, visible=False)
         app = b["appearance"]
-        if app == "cardbox":
+        if app == "invisible":
+            pass                     # the visual comes from the scenario's scene_usd (collider + labels only)
+        elif app == "cardbox":
             # the shipping-box art asset scaled so its bounding box is exactly the box (as scene_builder box_visual)
             vp = stage.DefinePrim(f"{bp}/visual", "Xform")
             vp.GetReferences().AddReference(f"{ISAAC_NUCLEUS_DIR}/{fcfg['appearance']['cardbox_usd']}")
@@ -154,6 +183,9 @@ def build_scenario(stage, layout: dict, fcfg: dict, bcfg_label: dict) -> dict:
             fr = dict(front); fr["center"] = (-d / 2 - eps, 0, h / 2 - min(drop, h) / 2)
             _quad(stage, f"{bp}/decal_front", tw, min(drop, h), **fr, material=tm)
         paths["boxes"][b["id"]] = bp
+    su = layout["scenario"].get("scene_usd")
+    if su is not None:
+        paths["scene_usd"] = author_scene_usd(stage, f"{SCN}/SceneUSD", su)
     for bc in layout["barcodes"]:
         bp = paths["boxes"][bc["box_id"]]
         lp, k = f"{bp}/{LABEL_PRIM[bc['face']]}", 0

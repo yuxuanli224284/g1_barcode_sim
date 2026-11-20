@@ -90,6 +90,8 @@ def to_layout(sc: dict, fcfg: dict, label_thickness: float | None = None) -> dic
                           "yaw": 0.0, "appearance": b["appearance"], "distractor": False, "barcodes": []}
     border = fcfg["barcode"]["backing_border"]
     face_offset, margin = fcfg["barcode"]["face_offset"], fcfg["barcode"]["margin"]
+    if sc.get("label_margin") is not None:   # scenario-level override (measured labels that reach the box edge)
+        margin = float(sc["label_margin"])
     wdh = {b["id"]: b["size_wdh"] for b in sc["boxes"]}
     barcodes = []
     on_face = {}                        # (box, face) -> [(u, v, eu, ev)] of the labels already placed there

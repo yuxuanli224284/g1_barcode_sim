@@ -47,9 +47,23 @@ def load_scanner_cfg(overrides: dict | None = None) -> dict:
     return deep_merge(_load(os.path.join(CFG_DIR, "scanner.yaml")), overrides)
 
 
+def load_variant(name: str) -> dict:
+    """Override bundle {"robot": .., "scanner": .., "camera": ..} of a robot variant (configs/robot_variants.yaml)."""
+    variants = _load(os.path.join(CFG_DIR, "robot_variants.yaml"))
+    if name not in variants:
+        raise ValueError(f"unknown robot variant {name!r}; known: {sorted(variants)}")
+    return variants[name] or {}
+
+
 def load_all(scene: str, overrides: dict | None = None) -> dict:
-    """overrides: {"scene": {...}, "barcode": {...}, "robot": {...}, "camera": {...}, "scanner": {...}}"""
+    """overrides: {"scene": {...}, "barcode": {...}, "robot": {...}, "camera": {...}, "scanner": {...}}.
+    The robot variant (robot.yaml `variant`, or overrides["robot"]["variant"]) is merged between the yaml files and the
+    overrides."""
     o = overrides or {}
+    variant = (o.get("robot") or {}).get("variant") or _load(os.path.join(CFG_DIR, "robot.yaml"))["variant"]
+    v = load_variant(variant)
+    robot = load_robot_cfg(deep_merge(v.get("robot") or {}, o.get("robot")))
+    robot["variant"] = variant
     return {"scene": load_scene_cfg(scene, o.get("scene")), "barcode": load_barcode_cfg(o.get("barcode")),
-            "robot": load_robot_cfg(o.get("robot")), "camera": load_camera_cfg(o.get("camera")),
-            "scanner": load_scanner_cfg(o.get("scanner"))}
+            "robot": robot, "camera": load_camera_cfg(deep_merge(v.get("camera") or {}, o.get("camera"))),
+            "scanner": load_scanner_cfg(deep_merge(v.get("scanner") or {}, o.get("scanner")))}

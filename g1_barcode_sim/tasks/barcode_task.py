@@ -5,8 +5,13 @@ settings (dt 0.005, decimation 4, physics material), the head camera on d435_lin
 Removed: the cylinder-task room, tables, cylinder, upstream wrist / third-person cameras, the camera-image
 observation term (shared-memory writer) and the cylinder reward. Added: the barcode scene spawner,
 one aux camera, optional fixed recording cameras (camera_head.yaml recording), the handheld scanner (scanner_mount + gun geometry) and the camera at the scanner head. Upstream files are not modified; we edit a copy of the cfg object.
+Robot variant g1_v2 (robot.yaml asset.kind urdf): the articulation is imported from the lab's URDF instead of the upstream
+USD (same actuator groups, gripper joints renamed), plus the hand cameras (robot.yaml hand_cameras).
 """
 from __future__ import annotations
+
+import copy
+import os
 
 import isaaclab.envs.mdp as base_mdp
 import isaaclab.sim as sim_utils
@@ -75,6 +80,60 @@ def _apply_gear_wbc_robot(robot_cfg, gcfg):
     robot_cfg.init_state.joint_pos = jp
 
 
+def robot_urdf_path(rcfg) -> str:
+    """URDF of a robot variant imported from a description directory (robot.yaml asset)."""
+    from ..config import PKG_ROOT
+    a = rcfg["asset"]
+    d = a["description_dir"] or os.environ.get("G1_V2_DESCRIPTION") or os.path.join(os.path.dirname(PKG_ROOT), "g1_description_v2")
+    p = os.path.join(d, a["urdf"])
+    if not os.path.exists(p):
+        raise FileNotFoundError(f"{p} not found: prepare the description with scripts/prepare_g1_v2.py (or set $G1_V2_DESCRIPTION)")
+    return p
+
+
+def _apply_urdf_robot(robot_cfg, rcfg):
+    """Swap the upstream USD for the variant's URDF (converted once into <description>/usd_cache) and rename the gripper
+    joints; actuator groups, gains, limits and the default arm / leg pose stay upstream."""
+    import isaaclab.sim as su
+    a, up = rcfg["asset"], robot_cfg.spawn
+    urdf = robot_urdf_path(rcfg)
+    robot_cfg.spawn = su.UrdfFileCfg(
+        asset_path=urdf, usd_dir=os.path.join(os.path.dirname(urdf), "usd_cache"),
+        usd_file_name=os.path.splitext(os.path.basename(urdf))[0] + ".usd",
+        fix_base=False, merge_fixed_joints=bool(a["merge_fixed_joints"]), self_collision=False,
+        make_instanceable=False,      # the clearance model walks <link>/collisions gprims (instance proxies are skipped)
+        joint_drive=su.UrdfConverterCfg.JointDriveCfg(
+            gains=su.UrdfConverterCfg.JointDriveCfg.PDGainsCfg(stiffness=None, damping=None)),   # gains: actuators below
+        activate_contact_sensors=up.activate_contact_sensors, rigid_props=up.rigid_props,
+        articulation_props=up.articulation_props)
+    grip = [j for side in ("left", "right") for j in rcfg["gripper"]["joints"][side]]
+    acts = dict(robot_cfg.actuators)
+    if grip:
+        h = copy.deepcopy(acts["hands"])
+        h.joint_names_expr = list(grip)
+        acts["hands"] = h
+    else:
+        del acts["hands"]
+    robot_cfg.actuators = acts
+    jp = {k: v for k, v in robot_cfg.init_state.joint_pos.items() if "_hand_Joint" not in k}   # upstream Dex1 names
+    jp.update({j: float(rcfg["gripper"]["joint_closed"]) for j in grip})                        # upstream starts closed
+    robot_cfg.init_state.joint_pos = jp
+
+
+def check_head_mount(urdf: str, ccfg) -> None:
+    """The head camera mount (camera_head.yaml `mount`) must be the URDF d435_joint the D435 visual hangs on, else the
+    rendered cameras and the D435 body drift apart (e.g. after changing --d435_pitch_deg in prepare_g1_v2.py only)."""
+    import re
+    import numpy as np
+    j = re.search(r'<joint name="d435_joint" type="fixed">\s*<origin xyz="([^"]*)" rpy="([^"]*)"', open(urdf).read())
+    if j is None:
+        raise ValueError(f"{urdf}: no fixed d435_joint")
+    m = ccfg["mount"]
+    if not (np.allclose([float(v) for v in j.group(1).split()], m["pos"], atol=1e-6)
+            and np.allclose([float(v) for v in j.group(2).split()], m["rpy"], atol=1e-6)):
+        raise ValueError(f"camera mount {m} != URDF d435_joint xyz {j.group(1)} rpy {j.group(2)} ({urdf})")
+
+
 def make_env_cfg(cfg, layout, scfg, bcfg, rcfg, ccfg, texture_dir, scancfg):
     import math
     from ..camera import R_to_quat_wxyz
@@ -85,6 +144,13 @@ def make_env_cfg(cfg, layout, scfg, bcfg, rcfg, ccfg, texture_dir, scancfg):
         if hasattr(sc, name):
             setattr(sc, name, None)
 
+    asset = rcfg.get("asset") or {"kind": "upstream_usd"}
+    if asset["kind"] == "urdf":
+        _apply_urdf_robot(sc.robot, rcfg)
+        if ccfg.get("mount"):
+            check_head_mount(robot_urdf_path(rcfg), ccfg)
+    elif asset["kind"] != "upstream_usd":
+        raise ValueError(f"robot asset kind must be upstream_usd | urdf, got {asset['kind']!r}")
     yaw = rcfg["init_yaw"]
     sc.robot.init_state.pos = tuple(rcfg["init_pos"][:2]) + (init_root_z(rcfg),)
     if rcfg["locomotion"] == "gear_wbc":
@@ -116,8 +182,18 @@ def make_env_cfg(cfg, layout, scfg, bcfg, rcfg, ccfg, texture_dir, scancfg):
                 spawn=sim_utils.PinholeCameraCfg(focal_length=st["focal_length"], focus_distance=ccfg["focus_distance"],
                                                  horizontal_aperture=st["horizontal_aperture"],
                                                  clipping_range=tuple(ccfg["clipping_range"])),
-                offset=CameraCfg.OffsetCfg(pos=tuple(st[f"{side}_pos"]), rot=tuple(ccfg["offset_rot_wxyz"]),
+                offset=CameraCfg.OffsetCfg(pos=tuple(st[f"{side}_pos"]), rot=tuple(st["rot_wxyz"]),
                                            convention=ccfg["offset_convention"])))
+
+    # cameras on the hands (robot variant g1_v2: the D405 on the left wrist bracket)
+    from ..camera import focal_for_hfov
+    for name, h in (rcfg.get("hand_cameras") or {}).items():
+        setattr(sc, f"hand_{name}_camera", CameraCfg(
+            prim_path=f"{{ENV_REGEX_NS}}/Robot/{h['parent_link']}/{name}_cam", width=int(h["width"]), height=int(h["height"]),
+            update_period=0.0, data_types=list(h["data_types"]),
+            spawn=sim_utils.PinholeCameraCfg(focal_length=focal_for_hfov(h["hfov_deg"], 20.0), horizontal_aperture=20.0,
+                                             focus_distance=ccfg["focus_distance"], clipping_range=tuple(h["clipping_range"])),
+            offset=CameraCfg.OffsetCfg(pos=tuple(h["pos"]), rot=tuple(h["rot_wxyz"]), convention="ros")))
 
     ac = ccfg["aux"]
     sc.aux_camera = CameraCfg(prim_path="/World/AuxCamera", width=ac["width"], height=ac["height"], update_period=0.0,

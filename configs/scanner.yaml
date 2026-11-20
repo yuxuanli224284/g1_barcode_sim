@@ -10,6 +10,8 @@
 #   cam   = muzzle camera, ROS optical frame (+z forward = +x_G, +x right = -y_G, +y down = -z_G).
 enabled: true                        # false: only the empty scanner_mount Xform, no gun / camera / grip
                                      # held by the gripper of robot.yaml scanner_mount.parent_link (left)
+held_by: gripper                     # gripper: held by the gripper of scanner_mount.parent_link (closes on the handle);
+                                     # rigid: bolted to that link (robot variant g1_v2: wrist bracket)
 
 # Gun geometry, all in the G frame (m). Outer envelope 0.16 (h) x 0.066 (w) x 0.105 (l) follows a common
 # handheld imager (Zebra DS2208 data sheet: 16.5 x 6.6 x 9.9 cm); the split into parts is mine.

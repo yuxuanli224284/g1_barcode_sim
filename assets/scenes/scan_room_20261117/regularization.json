@@ -1,0 +1,19 @@
+{
+  "method": "measured ideal boxes + enlarged floor with repeated original striped carpet texture + enlarged continuous estimated vertical wall",
+  "revision_date": "2026-11-16",
+  "wall_surface": "one continuous rectangle, two triangles, uniform paint material",
+  "wall_extent_m": {
+    "width": 6.0,
+    "height": 3.0
+  },
+  "floor_extent_m": {
+    "width": 6.0,
+    "depth": 6.0
+  },
+  "floor_material_provenance": "carpet_texture_provenance.json",
+  "wall_y_m": 0.5016401410102844,
+  "wall_point_count": 68554,
+  "wall_y_residual_median_m": 0.03682348132133484,
+  "static_colliders": 32,
+  "expanded_region": "geometry extents and repeated carpet layout are assumptions, not newly observed room geometry"
+}

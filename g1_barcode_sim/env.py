@@ -70,6 +70,11 @@ class G1BarcodeEnv:
         base_cfg = parse_env_cfg(rcfg["templates"][rcfg["end_effector"]], device=rcfg["physics_device"], num_envs=1)
         env_cfg, self._spawner = make_env_cfg(base_cfg, self.layout, scfg, bcfg, rcfg, ccfg, self.texture_dir, self.cfg["scanner"])
         self.env = gym.make(rcfg["templates"][rcfg["end_effector"]], cfg=env_cfg).unwrapped
+        if (rcfg.get("asset") or {}).get("kind") == "urdf" and rcfg.get("looks"):
+            import omni.usd
+            from .robot_look import apply_looks
+            from .tasks.barcode_task import robot_urdf_path
+            apply_looks(omni.usd.get_context().get_stage(), "/World/envs/env_0/Robot", robot_urdf_path(rcfg), rcfg["looks"])
         self.env.sim.reset()
         self.env.reset()
         self.robot = self.env.scene["robot"]
@@ -80,6 +85,8 @@ class G1BarcodeEnv:
         # fixed recording cameras (camera_head.yaml recording; off unless a video user enables them): name -> Camera
         self.rec_cams = ({n: self.env.scene[f"rec_{n}_camera"] for n in ccfg["recording"]["cameras"]}
                          if ccfg["recording"]["enabled"] else {})
+        # cameras on the hands (robot.yaml hand_cameras; robot variant g1_v2: left_d405)
+        self.hand_cams = {n: self.env.scene[f"hand_{n}_camera"] for n in (rcfg.get("hand_cameras") or {})}
         self.locomotion = rcfg["locomotion"]
         if self.locomotion == "gear_wbc":
             from .config import deep_merge
@@ -87,9 +94,11 @@ class G1BarcodeEnv:
             from .gear_wbc import GearWbcWalker
             if rcfg.get("mode_policies"):
                 raise ValueError("mode_policies applies to the unitree walker only; GR00T switches Balance/Walk itself")
-            self.walker = GearWbcWalker(self.env, rcfg["gear_wbc"])
+            self.walker = GearWbcWalker(self.env, rcfg["gear_wbc"], rcfg["gripper"]["joints"])
             self.policy_dt = self.env.physics_dt * self.walker.decimation
         else:
+            if (rcfg.get("asset") or {}).get("kind", "upstream_usd") != "upstream_usd":
+                raise ValueError("locomotion unitree runs on the upstream USD only (robot variant g1_v1); use gear_wbc")
             self.walker = InProcessWholebodyWalker(self.env, model_path=rcfg["policy_model"], height_cmd=rcfg["height_cmd"])
             self.policy_dt = self.env.physics_dt * 4   # upstream get_action() sub-steps physics 4x
         self._mode_policies, self._mode = None, None
@@ -121,18 +130,28 @@ class G1BarcodeEnv:
             from .stereo_ir import IRStereoSynth
             st = ccfg["stereo"]
             self.ir_cams = {s: self.env.scene[f"head_ir_{s}_camera"] for s in ("left", "right")}
-            self._T_link_ir = {s: make_T(st[f"{s}_pos"], ccfg["offset_rot_wxyz"]) for s in ("left", "right")}
+            self._T_link_ir = {s: make_T(st[f"{s}_pos"], st["rot_wxyz"]) for s in ("left", "right")}
             P = st["projector"]
             self._ir_synth = IRStereoSynth(st, intrinsics(st["width"], st["height"], st["hfov_deg"]),
                                            self._T_link_ir["left"], self._T_link_ir["right"],
-                                           make_T(P["pos"], ccfg["offset_rot_wxyz"]) if P["enabled"] else None, seed)
+                                           make_T(P["pos"], P["rot_wxyz"]) if P["enabled"] else None, seed)
         from .collision import RobotCollisionModel
         self.collision_model = RobotCollisionModel(self.robot, self.layout)
         self._scanner_grip_q = None
-        if self.scanner_on:
+        self.scanner_held = self.scanner_on and self.cfg["scanner"]["held_by"] == "gripper"
+        if self.cfg["scanner"]["held_by"] not in ("gripper", "rigid"):
+            raise ValueError(f"scanner.yaml held_by must be gripper | rigid, got {self.cfg['scanner']['held_by']!r}")
+        if self.scanner_on and self.cfg["scanner"]["parts"]:
             from .scanner import part_corners_G
             P = part_corners_G(self.cfg["scanner"])
             self.collision_model.add_body_points(mc["parent_link"], (self._T_body_mount[:3, :3] @ P.T).T + self._T_body_mount[:3, 3])
+        # visual-only parts of the robot description (robot.yaml clearance_boxes: bracket, scanner, D405s): box corners
+        for b in rcfg.get("clearance_boxes") or []:
+            c, h = np.asarray(b["center"], float), np.asarray(b["size"], float) / 2
+            self.collision_model.add_body_points(b["link"], np.array([c + h * np.array([sx, sy, sz]) for sx in (-1, 1)
+                                                                      for sy in (-1, 1) for sz in (-1, 1)]))
+        self._T_link_hand_cam = {n: make_T(h["pos"], h["rot_wxyz"]) for n, h in (rcfg.get("hand_cameras") or {}).items()}
+        self._hand_cam_body = {n: self.body_names.index(h["parent_link"]) for n, h in (rcfg.get("hand_cameras") or {}).items()}
         from .arm import WristIK
         self.arm = WristIK(self, rcfg["arm_ik"])
         self._post_reset(seed)
@@ -162,7 +181,7 @@ class G1BarcodeEnv:
     def _default_gripper_targets(self):
         """(left, right) joint targets after a reset: open, except the scanner hand, which closes on the handle."""
         t = {"left": self._gripper_joint(1.0), "right": self._gripper_joint(1.0)}
-        if self.scanner_on:
+        if self.scanner_held:
             if self._scanner_grip_q is None:
                 from .scanner import grip_joint_target
                 g = self.cfg["robot"]["gripper"]
@@ -323,6 +342,8 @@ class G1BarcodeEnv:
         jp = self.robot.data.joint_pos[0].cpu().numpy()
         g = self.cfg["robot"]["gripper"]
         def opening(side):
+            if not g["joints"][side]:
+                return None                     # no gripper on that hand (robot variant g1_v2: left scanner bracket)
             q = np.mean([jp[jn.index(j)] for j in g["joints"][side]])
             return float((q - g["joint_closed"]) / (g["joint_open"] - g["joint_closed"]))
         obs = {
@@ -403,6 +424,8 @@ class G1BarcodeEnv:
         Every policy step renders all cameras, so in a step hook this is the frame of that step."""
         if name == "head":
             cam = self.head_cam
+        elif name in self.hand_cams:
+            cam = self.hand_cams[name]
         elif name == "wrist":
             if self.wrist_cam is None:
                 raise ValueError("no wrist camera (configs/scanner.yaml enabled: false)")
@@ -410,6 +433,19 @@ class G1BarcodeEnv:
         else:
             cam = self.rec_cams[name]
         return cam.data.output["rgb"][0].cpu().numpy()[..., :3].astype(np.uint8)
+
+    def hand_camera_obs(self, name: str) -> dict:
+        """A hand camera (robot.yaml hand_cameras, e.g. left_d405): rgb, render depth (distance to the image plane, m),
+        K and its pose in the root frame (from the link pose, as the head camera)."""
+        from .camera import inv_T
+        cam = self.hand_cams[name]
+        out = cam.data.output
+        T = inv_T(self._T_world_root()) @ self._link_T(self._hand_cam_body[name]) @ self._T_link_hand_cam[name]
+        obs = {"rgb": out["rgb"][0].cpu().numpy()[..., :3].astype(np.uint8), "T_root_cam": T,
+               "K": cam.data.intrinsic_matrices[0].cpu().numpy().astype(np.float64)}
+        if "distance_to_image_plane" in out:
+            obs["depth"] = np.nan_to_num(out["distance_to_image_plane"][0].cpu().numpy().squeeze(-1), nan=0.0, posinf=0.0)
+        return obs
 
     def pose_rec_camera(self, name: str, T_world_cam_ros, hfov_deg: float) -> np.ndarray:
         """Place a fixed recording camera (ROS optical pose) with a horizontal FOV; returns its intrinsic matrix as set.
@@ -583,7 +619,11 @@ class G1BarcodeEnv:
             return {"status": "error", "reason": f"side must be left|right|both, got {side!r}"}
         sides = ["left", "right"] if side == "both" else [side]
         note = ""
-        if self.scanner_on and self.scanner_side in sides:
+        g = self.cfg["robot"]["gripper"]["joints"]
+        if side != "both" and not g[side]:
+            return {"status": "error", "reason": f"the {side} hand has no gripper (robot variant {self.cfg['robot']['variant']})"}
+        sides = [sd for sd in sides if g[sd]]
+        if self.scanner_held and self.scanner_side in sides:
             if side != "both":
                 return {"status": "error", "reason": f"the {side} gripper holds the scanner (configs/scanner.yaml enabled: true)"}
             sides.remove(self.scanner_side)

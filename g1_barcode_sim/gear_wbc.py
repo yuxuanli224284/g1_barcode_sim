@@ -66,7 +66,8 @@ class _GripperCommand:
 
 
 class GearWbcWalker:
-    def __init__(self, env, gcfg: dict):
+    def __init__(self, env, gcfg: dict, gripper_joints: dict | None = None):
+        """gripper_joints: {"left": [...], "right": [...]} (robot.yaml gripper.joints; default: the upstream Dex1 names)."""
         self.env = env
         self.robot = env.scene["robot"]
         self.ref = ref = load_gear_cfg(gcfg)
@@ -78,7 +79,7 @@ class GearWbcWalker:
         self.idx29 = np.array([names.index(n) for n in G29])
         self.idx15 = self.idx29[:15]
         self.arm_joint_mapping = dict(ARM_JOINT_MAPPING)
-        self._grip_idx = {s: [names.index(n) for n in js] for s, js in GRIPPER_JOINTS.items()}
+        self._grip_idx = {s: [names.index(n) for n in js] for s, js in (gripper_joints or GRIPPER_JOINTS).items()}
         covered = set(self.idx29.tolist()) | {i for v in self._grip_idx.values() for i in v}
         if covered != set(range(len(names))):
             missing = [names[i] for i in range(len(names)) if i not in covered]

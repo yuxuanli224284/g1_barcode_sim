@@ -1,4 +1,7 @@
 # Robot + end effector
+variant: g1_v2                       # robot variant (configs/robot_variants.yaml): g1_v2 = the lab's real G1 as modified
+                                     # (2026-11-19: head D435 moved, left wrist scanner bracket + D405, right Dex1 + D405);
+                                     # g1_v1 = the original upstream G1 + Dex1 with the handheld scanner in the left gripper
 end_effector: dex1                   # dex1 | dex3 | inspire
 templates:                           # upstream Wholebody task used as the template for each end effector
   dex1: Isaac-Move-Cylinder-G129-Dex1-Wholebody

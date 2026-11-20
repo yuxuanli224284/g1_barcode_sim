@@ -1,0 +1,11 @@
+#usda 1.0
+(
+    defaultPrim = "World"
+    doc = "Recommended simulation entry point: measured ideal boxes and constrained planes, photographed textures where available. See README for reconstruction limitations."
+    metersPerUnit = 1
+    subLayers = [
+        @scene_regularized.usda@
+    ]
+    upAxis = "Z"
+)
+

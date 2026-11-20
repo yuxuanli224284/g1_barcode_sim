@@ -1,0 +1,261 @@
+{
+  "method": "COLMAP front-plane fit and manually annotated repeated box barcode grid; known dimensions select metric scale",
+  "box_dimensions_supplied_m": [
+    0.2,
+    0.25,
+    0.4
+  ],
+  "selected_axis_assignment": {
+    "width_m": 0.2,
+    "height_m": 0.25,
+    "depth_m": 0.4,
+    "scale": 0.3833836462497097,
+    "relative_axis_scale_mismatch": 0.006202843627185669
+  },
+  "axis_assignment_candidates": [
+    {
+      "width_m": 0.2,
+      "height_m": 0.25,
+      "depth_m": 0.4,
+      "scale": 0.3833836462497097,
+      "relative_axis_scale_mismatch": 0.006202843627185669
+    },
+    {
+      "width_m": 0.25,
+      "height_m": 0.4,
+      "depth_m": 0.2,
+      "scale": 0.5421863521183885,
+      "relative_axis_scale_mismatch": 0.2406572343043403
+    },
+    {
+      "width_m": 0.25,
+      "height_m": 0.2,
+      "depth_m": 0.4,
+      "scale": 0.3833836462497097,
+      "relative_axis_scale_mismatch": 0.452489946255605
+    },
+    {
+      "width_m": 0.2,
+      "height_m": 0.4,
+      "depth_m": 0.25,
+      "scale": 0.48494621592374154,
+      "relative_axis_scale_mismatch": 0.46380078561854987
+    },
+    {
+      "width_m": 0.4,
+      "height_m": 0.25,
+      "depth_m": 0.2,
+      "scale": 0.5421863521183885,
+      "relative_axis_scale_mismatch": 0.699350024187131
+    },
+    {
+      "width_m": 0.4,
+      "height_m": 0.2,
+      "depth_m": 0.25,
+      "scale": 0.48494621592374154,
+      "relative_axis_scale_mismatch": 0.9224935755013407
+    }
+  ],
+  "grid_columns": 6,
+  "grid_rows": 5,
+  "detected_labels": 30,
+  "plane_points": 835,
+  "plane_inliers": 706,
+  "grid_fit_residual_median_m": 0.006930978985151181,
+  "grid_fit_residual_p95_m": 0.012931499033084016,
+  "raw_grid_angle_deg": 88.76073784236854,
+  "colmap_to_metric_z_up": [
+    [
+      0.3654243857211228,
+      -0.004369952271001321,
+      0.11588331221194809,
+      -0.04673343959435762
+    ],
+    [
+      -0.10990617964472173,
+      -0.1352715579009466,
+      0.3414751198999359,
+      -1.5230540253601885
+    ],
+    [
+      0.03699554308244198,
+      -0.35869977606896075,
+      -0.13018763632478758,
+      1.4514290185818595
+    ],
+    [
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ]
+  ],
+  "front_corners_metric": [
+    [
+      -0.6102663419336228,
+      6.661338147750939e-16,
+      1.2225637694629388
+    ],
+    [
+      0.5718062829212794,
+      1.7763568394002505e-15,
+      1.2264008969003992
+    ],
+    [
+      0.6168522161802219,
+      2.220446049250313e-16,
+      0.00029389804377877304
+    ],
+    [
+      -0.6168522161802218,
+      -6.661338147750939e-16,
+      -0.0002938980437789951
+    ]
+  ],
+  "reference_image": "frame_000168.jpg",
+  "front_quad_pixels": [
+    [
+      -8.0,
+      268.0
+    ],
+    [
+      699.0,
+      290.0
+    ],
+    [
+      629.0,
+      892.0
+    ],
+    [
+      49.0,
+      874.0
+    ]
+  ],
+  "barcode_centers_pixels": [
+    [
+      25.0,
+      285.0
+    ],
+    [
+      144.0,
+      286.0
+    ],
+    [
+      257.0,
+      289.0
+    ],
+    [
+      383.0,
+      294.0
+    ],
+    [
+      505.0,
+      297.0
+    ],
+    [
+      623.0,
+      302.0
+    ],
+    [
+      45.0,
+      423.0
+    ],
+    [
+      150.0,
+      430.0
+    ],
+    [
+      267.0,
+      430.0
+    ],
+    [
+      378.0,
+      438.0
+    ],
+    [
+      492.0,
+      441.0
+    ],
+    [
+      606.0,
+      447.0
+    ],
+    [
+      57.0,
+      557.0
+    ],
+    [
+      163.0,
+      562.0
+    ],
+    [
+      272.0,
+      566.0
+    ],
+    [
+      372.0,
+      571.0
+    ],
+    [
+      484.0,
+      575.0
+    ],
+    [
+      586.0,
+      578.0
+    ],
+    [
+      63.0,
+      682.0
+    ],
+    [
+      174.0,
+      684.0
+    ],
+    [
+      280.0,
+      688.0
+    ],
+    [
+      376.0,
+      692.0
+    ],
+    [
+      478.0,
+      695.0
+    ],
+    [
+      578.0,
+      701.0
+    ],
+    [
+      82.0,
+      796.0
+    ],
+    [
+      180.0,
+      802.0
+    ],
+    [
+      275.0,
+      799.0
+    ],
+    [
+      373.0,
+      802.0
+    ],
+    [
+      469.0,
+      806.0
+    ],
+    [
+      565.0,
+      806.0
+    ]
+  ],
+  "limitations": [
+    "Grid fit residual measures internal consistency, not independent absolute accuracy.",
+    "Axis assignment is inferred from observed proportions and supplied dimensions.",
+    "Floor origin uses the manually identified visible box-stack base."
+  ]
+}

@@ -1,0 +1,92 @@
+# Robot variants. Each is a bundle of overrides of robot.yaml / scanner.yaml / camera_head.yaml, selected by robot.yaml
+# `variant` (or G1BarcodeEnv(config_overrides={"robot": {"variant": ...}})). Merge order: yaml file <- variant <-
+# config_overrides (config.load_all).
+
+# The original setup: unitree_sim_isaaclab's G1 29-DoF + Dex1 USD (Dex1 grippers on both hands), a handheld scanner
+# (box geometry, configs/scanner.yaml) held by the left gripper, the head camera on the USD's d435_link.
+g1_v1: {}
+
+# The lab's G1 as modified on the real robot (robot description g1_description.zip, 2026-11-19; prepared with
+# scripts/prepare_g1_v2.py, which also measured every number marked "measured" below from the meshes; record in
+# <description_dir>/derived_frames.json):
+# - head: D435(i) moved (d435_joint 4 cm higher than the stock G1) and tilted up (axis 30 deg below horizontal standing; stock 47.6); our D435i model
+# - left hand: no gripper; a bracket on the wrist carries a scanner (meshes/scan_tool.obj) and, on top of a mast, a D405
+# - right hand: Dex1 gripper with a D405 on a mount
+g1_v2:
+  robot:
+    asset:                           # the robot is imported from the URDF (Isaac Lab UrdfConverter, cached USD)
+      kind: urdf
+      urdf: g1_v2_sim.urdf
+      description_dir: null          # null: $G1_V2_DESCRIPTION, else ../g1_description_v2 next to this repository
+      # fixed joints merged into their movable parent links: links without an <inertial> (d435_link, optical frames,
+      # tool links' frames) would otherwise become extra rigid bodies with a PhysX default mass. Frames of merged links are
+      # taken from the URDF (the offsets below).
+      merge_fixed_joints: true
+    looks:                           # g1_barcode_sim/robot_look.py, applied after the import
+      # The imported URDF greys (white 0.7, dark 0.2) -> the materials unitree's G1 USD (g1_v1) binds to the same meshes
+      # (same STL meshes, one-to-one: URDF white <-> its DefaultMaterial, URDF dark <-> its material_CAD1EE; values read
+      # from that USD), so both variants look alike. The metallic white is what gives the real G1's shaded look.
+      materials:
+        material_white: {diffuse_color_constant: [0.75, 0.75, 0.76], diffuse_tint: [0.9, 0.9, 0.91], metallic_constant: 1.0,
+                         reflection_roughness_constant: 0.75, specular_level: 0.25}
+        material_dark: {diffuse_color_constant: [0.058, 0.0587, 0.0618], diffuse_tint: [0.1853, 0.1689, 0.1689], metallic_constant: 0.42}
+        material_CAD1EE: {diffuse_color_constant: [0.058, 0.0587, 0.0618], diffuse_tint: [0.1853, 0.1689, 0.1689], metallic_constant: 0.42}
+        material_696969: {diffuse_color_constant: [0.058, 0.0587, 0.0618], diffuse_tint: [0.1853, 0.1689, 0.1689], metallic_constant: 0.42}
+        material_E5EAED: {diffuse_color_constant: [0.058, 0.0587, 0.0618], diffuse_tint: [0.1853, 0.1689, 0.1689], metallic_constant: 0.42}
+      mesh_colors:                   # meshes whose g1_v1 material differs from their URDF material class
+        logo_link: [0.498, 0.498, 0.498, 1.0]   # g1_v1 DefaultMaterial_0 (URDF: dark)
+      urdf_inline_colors: true       # bracket / scanner / D435 / D405s / mount: the colours written in their URDF <visual>
+    gripper:
+      joints: {left: [], right: [right_dex1_finger_joint_1, right_dex1_finger_joint_2]}   # left hand: scanner bracket
+      pad_links:
+        finger1: ["{side}_dex1_finger_link_1"]
+        finger2: ["{side}_dex1_finger_link_2"]
+    scanner_mount:                   # G = scan reference frame on the left wrist (configs/scanner.yaml frames)
+      parent_link: left_wrist_yaw_link
+      pos: [0.1419, 0.005, 0.0951]   # measured: centre of the scanner's exit window (bottom of the nose funnel; the
+                                     # funnel rim stands 15 mm further out)
+      quat_wxyz: [1.0, 0.0, 0.0, 0.0]   # scan direction = the scanner's own axis = +x of the wrist (URDF tool joints:
+                                        # within 0.05 deg; the bumpy window face normal is within 3 deg of it, measured)
+    arm_ik:
+      ee_link: "{side}_wrist_yaw_link"   # no hand base links in this description (left: bracket; right: the Dex1 base is
+                                         # merged into the wrist link)
+    clearance_boxes:                 # measured: boxes (link frame) around the visual-only parts, for the clearance model
+      - {name: bracket,          link: left_wrist_yaw_link,  center: [0.0815, 0.005, 0.0753],  size: [0.0841, 0.047, 0.1908]}
+      - {name: scanner_head,     link: left_wrist_yaw_link,  center: [0.1111, 0.0049, 0.0931], size: [0.092, 0.0752, 0.0461]}
+      - {name: scanner_handle,   link: left_wrist_yaw_link,  center: [0.0999, 0.005, 0.0175],  size: [0.0676, 0.0521, 0.105]}
+      - {name: left_d405,        link: left_wrist_yaw_link,  center: [0.0789, 0.005, 0.1418],  size: [0.0296, 0.0421, 0.0449]}
+      - {name: right_d405,       link: right_wrist_yaw_link, center: [0.0806, 0.0, -0.0628],   size: [0.0392, 0.0421, 0.0468]}
+      - {name: right_d405_mount, link: right_wrist_yaw_link, center: [0.0738, 0.0, -0.0285],   size: [0.0348, 0.068, 0.1251]}
+    hand_cameras:                    # cameras on the hands (G1BarcodeEnv.hand_camera_obs(name), camera_rgb(name))
+      left_d405:
+        # Intel RealSense D405: stereo depth camera whose left imager also gives the colour image; FOV 87 x 58 deg,
+        # baseline 18 mm, ideal range 7-50 cm (datasheet). Modelled as one colour + render-depth camera at the left imager.
+        # The URDF left_d405 joint is a placeholder ("Example wrist mounting position", ~10 cm from the D405 visual);
+        # the camera sits on the visual (top of the bracket mast).
+        parent_link: left_wrist_yaw_link
+        pos: [0.09, 0.014, 0.14]     # measured: left imager = front-face centre + 9 mm to the camera's left
+        rot_wxyz: [0.453253, -0.542735, 0.542735, -0.453253]   # measured, ROS optical: looks along the front-face normal,
+                                                             # +x_wrist tilted 10.3 deg down; image right = -y_wrist
+        width: 848
+        height: 480
+        hfov_deg: 87.0
+        clipping_range: [0.03, 20.0]
+        data_types: [rgb, distance_to_image_plane]
+  scanner:
+    held_by: rigid                   # bolted to the wrist through the bracket (v1: held by the left gripper)
+    parts: []                        # the scanner geometry comes from the URDF (meshes/scan_tool.obj)
+    tip:
+      pos: [0.0, 0.0, 0.0]           # G is the window centre
+  camera:
+    prim_parent_link: torso_link     # d435_link is merged into torso_link; its URDF joint becomes the mount
+    # URDF d435_joint (g1_v2_sim.urdf). User 2026-11-19: on the real robot the camera face stands at 60 deg to the floor,
+    # i.e. the optical axis 30 deg below horizontal. The standing G1 (GR00T balance) leans its torso 3.85 deg forward
+    # (measured: joint pitch 30 deg gave 33.85 deg below horizontal), so the joint pitch is 26.15 deg
+    # (prepare_g1_v2.py --d435_pitch_deg 26.15). The supplied URDF had 0.8307767 rad = 47.6 deg (as the stock G1).
+    mount: {pos: [0.0586235, 0.01753, 0.46987], rpy: [0.0, 0.4564035994, 0.0]}
+    d435i:
+      # measured: position of the left infrared imager (the D435i reference) in d435_link: the D435 visual's front glass
+      # is 3.0 cm ahead of the link origin, the module 2.0 cm above it and centred 2.0 cm to its right; imager 4.2 mm
+      # behind the glass and 17.5 mm left of the module centre (realsense2_description _d435.urdf.xacro). A camera at
+      # the joint origin itself would look into the back of the D435 body.
+      module_origin: [0.0258, -0.0025, 0.02]

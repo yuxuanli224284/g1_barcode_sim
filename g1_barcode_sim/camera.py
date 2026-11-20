@@ -154,27 +154,65 @@ def intrinsics(width: int, height: int, hfov_deg: float) -> np.ndarray:
     return np.array([[f, 0.0, width / 2.0], [0.0, f, height / 2.0], [0.0, 0.0, 1.0]])
 
 
+def rpy_to_R(rpy) -> np.ndarray:
+    """URDF roll-pitch-yaw (fixed axes x, y, z): R = Rz(yaw) Ry(pitch) Rx(roll)."""
+    r, p, y = (float(v) for v in rpy)
+    cr, sr, cp, sp, cy, sy = math.cos(r), math.sin(r), math.cos(p), math.sin(p), math.cos(y), math.sin(y)
+    return np.array([[cy * cp, cy * sp * sr - sy * cr, cy * sp * cr + sy * sr],
+                     [sy * cp, sy * sp * sr + cy * cr, sy * sp * cr - cy * sr],
+                     [-sp, cp * sr, cp * cr]])
+
+
+def head_mount_T(cfg: dict) -> np.ndarray:
+    """T_parent_d435: pose of the camera module's reference frame (d435_link axes) in `prim_parent_link`. Identity when
+    the parent link is d435_link itself (no `mount`)."""
+    m = cfg.get("mount")
+    T = np.eye(4)
+    if m:
+        T[:3, :3], T[:3, 3] = rpy_to_R(m["rpy"]), np.asarray(m["pos"], float)
+    return T
+
+
+def _in_parent(T_mount, pos, rot_wxyz):
+    T = T_mount @ make_T(pos, rot_wxyz)
+    return [float(v) for v in T[:3, 3]], [float(v) for v in R_to_quat_wxyz(T[:3, :3])]
+
+
 def resolve_head_model(cfg: dict) -> dict:
     """model d435i: the colour camera of the `d435i` block becomes the head camera (width, height, focal_length,
     horizontal_aperture, offset_pos), and cfg["stereo"] holds the infrared pair (resolved). model upstream: unchanged,
-    cfg["stereo"] = None."""
+    cfg["stereo"] = None.
+
+    Poses: the d435i positions are given in d435_link axes relative to `d435i.module_origin` (default 0: the link origin
+    is the left infrared imager); `mount` (optional) places d435_link in `prim_parent_link`. The resolved offset_pos /
+    offset_rot_wxyz (colour camera), stereo left_pos / right_pos / rot_wxyz and projector pos / rot_wxyz are all in
+    `prim_parent_link`."""
     model = cfg.get("model", "upstream")
+    T_m = head_mount_T(cfg)
     if model == "upstream":
-        return dict(cfg, stereo=None)
+        pos, rot = _in_parent(T_m, cfg["offset_pos"], cfg["offset_rot_wxyz"])
+        return dict(cfg, stereo=None, offset_pos=pos, offset_rot_wxyz=rot)
     if model != "d435i":
         raise ValueError(f"camera_head.yaml model must be d435i | upstream, got {model!r}")
     D = cfg["d435i"]
+    o = np.asarray(D.get("module_origin", [0.0, 0.0, 0.0]), float)
+    R0 = cfg["offset_rot_wxyz"]                       # optical axes in d435_link
     out = dict(cfg)
     c = D["color"]
+    pos, rot = _in_parent(T_m, o + np.asarray(D["color_pos"], float), R0)
     out.update(width=int(c["width"]), height=int(c["height"]),
                focal_length=focal_for_hfov(c["hfov_deg"], cfg["horizontal_aperture"]),
-               offset_pos=[float(v) for v in D["color_pos"]])
+               offset_pos=pos, offset_rot_wxyz=rot)
     ir = D["ir"]
+    lp, rot = _in_parent(T_m, o + np.asarray(D["ir_left_pos"], float), R0)
+    rp, _ = _in_parent(T_m, o + np.asarray(D["ir_right_pos"], float), R0)
+    proj = dict(D["projector"])
+    proj["pos"], proj["rot_wxyz"] = _in_parent(T_m, o + np.asarray(proj["pos"], float), R0)
     out["stereo"] = {"width": int(ir["width"]), "height": int(ir["height"]), "hfov_deg": float(ir["hfov_deg"]),
                      "focal_length": focal_for_hfov(ir["hfov_deg"], cfg["horizontal_aperture"]),
                      "horizontal_aperture": float(cfg["horizontal_aperture"]),
-                     "left_pos": [float(v) for v in D["ir_left_pos"]], "right_pos": [float(v) for v in D["ir_right_pos"]],
+                     "left_pos": lp, "right_pos": rp, "rot_wxyz": rot,
                      "baseline_m": float(np.linalg.norm(np.subtract(D["ir_left_pos"], D["ir_right_pos"]))),
-                     "projector": dict(D["projector"]), "ambient_gain": float(D["ir_ambient_gain"]),
+                     "projector": proj, "ambient_gain": float(D["ir_ambient_gain"]),
                      "noise_sigma": float(D["ir_noise_sigma"])}
     return out
