@@ -2,6 +2,19 @@
 
 中文 | [English](README_en.md)
 
+<!-- branch-overview:start -->
+> **分支一览**：本仓库按机器人 / 场景分成几个分支，`main` 是通用版，场景专用的改动放在各自分支，不并入 `main`。两个仓库（[g1_barcode_sim](https://github.com/yuxuanli224284/g1_barcode_sim) 仿真、[g1_agent_system](https://github.com/yuxuanli224284/g1_agent_system) agent）要用配套的分支。
+
+| 分支 | 内容 | 状态 | 配套的 g1_agent_system 分支 |
+|---|---|---|---|
+| **`main`（当前）** | 通用版：原版 G1（`g1_v1`，Dex1 双夹爪 + 手持扫码枪）、D435i 头部相机；桌面、货架、箱堆、箱墙场景 | 稳定 | [`main`](https://github.com/yuxuanli224284/g1_agent_system/tree/main) |
+| [`g1v2-scanroom`](https://github.com/yuxuanli224284/g1_barcode_sim/tree/g1v2-scanroom) | 实验室改装版 G1（`g1_v2`：头部 D435i 移位，左腕支架装扫码枪 + D405，右手 Dex1 + D405）+ 5×6 扫码间场景（第 2–4 层逐行扫） | 早期版本，已被下一行取代 | [`g1v2-scanroom`](https://github.com/yuxuanli224284/g1_agent_system/tree/g1v2-scanroom) |
+| [`g1v2-scanroom-layout`](https://github.com/yuxuanli224284/g1_barcode_sim/tree/g1v2-scanroom-layout) | 在 `g1v2-scanroom` 之上：已知墙面布局、两列一段（strip）的扫码任务集；`g1_v2` 机器人模型随仓库提供（Git LFS） | 最新，18 个码全部扫到 | [`g1v2-scanroom-layout`](https://github.com/yuxuanli224284/g1_agent_system/tree/g1v2-scanroom-layout) |
+| [`t800`](https://github.com/yuxuanli224284/g1_barcode_sim/tree/t800) | EngineAI T800 Pro 人形机器人接入（`robot.model: t800`），基于较早的 `main` | 未完成 | [`t800`](https://github.com/yuxuanli224284/g1_agent_system/tree/t800) |
+
+标签：`g1-v1-upstream-cam` = 换 D435i 之前的原版 G1（单目 105° 相机）；`g1v2-sub4-run1` = 扫码间 4 箱测试时的状态。
+<!-- branch-overview:end -->
+
 基于 Isaac Sim 5.1 / Isaac Lab 的仿真环境：Unitree G1 人形机器人左手夹持一把手持扫码枪，在仓库里寻找纸箱（桌面、货架、地面箱堆）上的条码标签，走过去、对准并扫码。环境提供头部相机（默认按真机 Intel D435i 建模：彩色相机 + 带散斑投射器的红外双目）、枪头相机、全身行走控制、手臂 IK、基于图像解码的扫码判定和完整的 ground truth，以及可复现的测试场景集（task suites）。
 
 | 桌面场景 | 货架场景 | 地面箱堆（四面贴码） |
