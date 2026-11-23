@@ -2,6 +2,19 @@
 
 [中文](README.md) | English
 
+<!-- branch-overview:start -->
+> **Branches**: the repository is split by robot / scene. `main` is the general version; scene-specific work lives on its own branch and is not merged into `main`. Use matching branches of the two repositories ([g1_barcode_sim](https://github.com/yuxuanli224284/g1_barcode_sim) simulator, [g1_agent_system](https://github.com/yuxuanli224284/g1_agent_system) agent).
+
+| Branch | Content | Status | Matching g1_agent_system branch |
+|---|---|---|---|
+| [`main`](https://github.com/yuxuanli224284/g1_barcode_sim/tree/main) | General version: stock G1 (`g1_v1`, Dex1 grippers + handheld scanner), D435i head camera; table, shelf, box-stack and box-wall scenes | stable | [`main`](https://github.com/yuxuanli224284/g1_agent_system/tree/main) |
+| **`g1v2-scanroom` (this branch)** | The lab's modified G1 (`g1_v2`: moved D435i, left-wrist bracket with scanner + D405, right Dex1 + D405) + the 5×6 scan-room scene (rows 2–4, row by row) | superseded by the next row | [`g1v2-scanroom`](https://github.com/yuxuanli224284/g1_agent_system/tree/g1v2-scanroom) |
+| [`g1v2-scanroom-layout`](https://github.com/yuxuanli224284/g1_barcode_sim/tree/g1v2-scanroom-layout) | On top of `g1v2-scanroom`: given wall layout and strip (two columns at a time) task suites; the `g1_v2` robot model ships with the repo (Git LFS) | latest, scanned all 18 labels | [`g1v2-scanroom-layout`](https://github.com/yuxuanli224284/g1_agent_system/tree/g1v2-scanroom-layout) |
+| [`t800`](https://github.com/yuxuanli224284/g1_barcode_sim/tree/t800) | EngineAI T800 Pro humanoid (`robot.model: t800`), based on an earlier `main` | work in progress | [`t800`](https://github.com/yuxuanli224284/g1_agent_system/tree/t800) |
+
+Tags: `g1-v1-upstream-cam` = the stock G1 before the D435i change (single 105° camera); `g1v2-sub4-run1` = state of the 4-box scan-room run.
+<!-- branch-overview:end -->
+
 A simulation environment built on Isaac Sim 5.1 / Isaac Lab: a Unitree G1 humanoid holds a handheld barcode scanner in its left hand, searches a warehouse for barcode labels on cardboard boxes (on tables, on shelves, in stacks on the floor), walks up to them, aims and scans. The environment provides a head camera (by default modelled on the real Intel D435i: a colour camera plus an infrared stereo pair with a dot projector), a scanner camera, whole-body locomotion control, arm IK, scan evaluation based on image decoding, complete ground truth, and reproducible test scenario sets (task suites).
 
 | Table scene | Shelf scene | Floor stack (labels on four faces) |
