@@ -102,9 +102,13 @@ pip install --no-deps "pyarrow==23.0.1"
 
 ### 7. 克隆本仓库，设置环境变量
 
+实验室改装版 G1（机器人型号 `g1_v2`，`configs/robot.yaml` 的默认型号）的机器人模型随仓库放在 `assets/g1_description_v2/`（URDF + 网格 + `derived_frames.json`）。其中扫码枪网格 `meshes/scan_tool.obj`（约 105 MB）超过 GitHub 的单文件上限，用 Git LFS 存放，克隆前要先 `git lfs install`；如果克隆时没装 git-lfs，这个文件只是一个几百字节的指针，之后在仓库里补一次 `git lfs pull` 即可。扫码间场景（`scanroom6x5_*` 测试场景集）在分支 `g1v2-scanroom-layout` 上。
+
 ```bash
-git clone <本仓库地址> g1_barcode_sim
+git lfs install
+git clone -b g1v2-scanroom-layout <本仓库地址> g1_barcode_sim
 cd g1_barcode_sim
+git lfs pull                                     # 确保 scan_tool.obj 是真实网格而不是 LFS 指针
 export OMNI_KIT_ACCEPT_EULA=YES
 # 只有 unitree_sim_isaaclab 不在 ../unitree_sim_isaaclab 时才需要：
 export UNITREE_SIM_ROOT=/path/to/unitree_sim_isaaclab
@@ -125,6 +129,7 @@ python scripts/generate_barcodes.py --type qr
 | 变量 | 作用 | 是否需要 |
 | --- | --- | --- |
 | `UNITREE_SIM_ROOT` | unitree_sim_isaaclab 克隆目录。未设置时使用本仓库的同级目录 `../unitree_sim_isaaclab`。目录里找不到 `action_provider/` 时，创建环境会直接抛出 `FileNotFoundError`。代码会把它同时设为上游使用的 `PROJECT_ROOT` | 上游仓库不在默认位置时需要 |
+| `G1_V2_DESCRIPTION` | g1_v2 机器人模型目录（含 `g1_v2_sim.urdf`）。未设置时用仓库内的 `assets/g1_description_v2`。首次启动时 Isaac Lab 把 URDF 转成 USD，缓存在该目录的 `usd_cache/`（不入库，里面是本机绝对路径），之后直接复用 | 模型放在别处时需要 |
 | `OMNI_KIT_ACCEPT_EULA` | 由 Isaac Sim 读取，设为 `YES` 时跳过 EULA 交互 | 建议设置 |
 | `PROGRESS_CLIENT_DIR` | `check_env.py` 和 `testsuite/preview.py` 的可选进度上报插件目录。不设置时不上报，对运行没有影响 | 一般不需要 |
 | `CUDA_VISIBLE_DEVICES` | 标准 CUDA 变量，多卡机器上选择使用哪张卡 | 可选 |
@@ -175,6 +180,7 @@ python -m pytest tests/
 python -c "from pyzbar import pyzbar; print('zbar ok')"
 python -c "import importlib.metadata as m; [print(p, m.version(p)) for p in ['isaacsim','isaaclab','torch','unitree_sdk2py','onnxruntime','python-barcode','qrcode','pyzbar']]"
 test -f "${UNITREE_SIM_ROOT:-../unitree_sim_isaaclab}/assets/robots/g1-29dof_wholebody_dex1/g1_29dof_with_dex1_rev_1_0.usd" && echo robot-usd ok
+head -c 4 assets/g1_description_v2/meshes/scan_tool.obj | grep -q mtll && echo g1_v2-mesh ok   # 输出 ok 说明不是 LFS 指针
 python scripts/testsuite/list.py                 # 纯 Python：列出所有测试场景集
 ```
 

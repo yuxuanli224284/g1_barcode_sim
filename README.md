@@ -55,7 +55,8 @@ conda install -y -c conda-forge zbar
 pip install python-barcode==0.16.1 qrcode==7.4.2 pyzbar==0.1.9 pillow opencv-python pyyaml scipy imageio-ffmpeg pytest
 
 # 5) 本仓库
-git clone <本仓库地址> g1_barcode_sim && cd g1_barcode_sim
+git lfs install                                  # g1_v2 机器人模型里有一个 LFS 文件（assets/g1_description_v2/meshes/scan_tool.obj）
+git clone -b g1v2-scanroom-layout <本仓库地址> g1_barcode_sim && cd g1_barcode_sim && git lfs pull
 export OMNI_KIT_ACCEPT_EULA=YES
 # export UNITREE_SIM_ROOT=/path/to/unitree_sim_isaaclab   # 不在 ../unitree_sim_isaaclab 时
 ```
@@ -121,11 +122,13 @@ docs/                  详细文档（Sphinx + MyST Markdown，构建后发布�
 |---|---|---|
 | D435i 头部相机（当前） | `main` | `camera_head.yaml` 默认 `model: d435i`；改成 `upstream` 即回到原来的单目相机 |
 | 原版 G1 | 标签 `g1-v1-upstream-cam` | D435i 改动之前的完整版本（单目 105° 相机 + 渲染深度），`git checkout g1-v1-upstream-cam` |
+| 实验室改装版 G1 + 扫码间（当前分支） | 分支 `g1v2-scanroom-layout`（父分支 `g1v2-scanroom`） | 机器人型号 `g1_v2`（`configs/robot.yaml` 默认），模型在 `assets/g1_description_v2/`；5×6 扫码间场景集 `scanroom6x5_*`，其中 `scanroom6x5_r234_strip_L0` 是按两列一段扫完第 2–4 层 18 个码的任务 |
 | T800 Pro（未完成） | 分支 `t800` | EngineAI T800 Pro 接入（`robot.model: g1 \| t800`），基于 D435i 改动之前的 `main`，尚未合并 |
 
 ## 许可证与致谢
 
 - `assets/gear_wbc/` 中的 GR00T WholeBodyControl 策略权重来自 [NVlabs/GR00T-WholeBodyControl](https://github.com/NVlabs/GR00T-WholeBodyControl)，遵循 NVIDIA Open Model License（见该目录下的 `NOTICE` 与许可证全文）。
-- 机器人模型与上游行走策略来自 [unitree_sim_isaaclab](https://github.com/unitreerobotics/unitree_sim_isaaclab)（Apache-2.0），不随本仓库分发。
+- 原版 G1（`g1_v1`）的机器人模型与上游行走策略来自 [unitree_sim_isaaclab](https://github.com/unitreerobotics/unitree_sim_isaaclab)（Apache-2.0），不随本仓库分发。
+- 实验室改装版 G1（`g1_v2`）的机器人模型 `assets/g1_description_v2/` 由实验室提供（g1_description.zip，2026-11-19），经 `scripts/prepare_g1_v2.py` 处理；其中 G1 本体与 Dex1 网格来自 Unitree。
 - 仓库背景与纸箱模型来自 NVIDIA Isaac Sim 资产库，运行时在线引用。
 - 本仓库代码：MIT License（见 [`LICENSE`](LICENSE)）；第三方组件遵循各自的许可证（见上）。

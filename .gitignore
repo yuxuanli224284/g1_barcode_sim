@@ -22,3 +22,6 @@ scripts/controller_compare/
 .env
 .vscode/
 .idea/
+
+# Isaac Lab URDF->USD conversion cache (regenerated on first start; holds absolute paths)
+assets/g1_description_v2/usd_cache/

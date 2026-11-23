@@ -17,7 +17,7 @@ g1_v2:
     asset:                           # the robot is imported from the URDF (Isaac Lab UrdfConverter, cached USD)
       kind: urdf
       urdf: g1_v2_sim.urdf
-      description_dir: null          # null: $G1_V2_DESCRIPTION, else ../g1_description_v2 next to this repository
+      description_dir: null          # null: $G1_V2_DESCRIPTION, else assets/g1_description_v2 in this repository
       # fixed joints merged into their movable parent links: links without an <inertial> (d435_link, optical frames,
       # tool links' frames) would otherwise become extra rigid bodies with a PhysX default mass. Frames of merged links are
       # taken from the URDF (the offsets below).

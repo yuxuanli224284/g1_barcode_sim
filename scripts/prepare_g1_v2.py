@@ -1,8 +1,8 @@
 """Prepare the real-robot-aligned G1 (robot variant g1_v2, configs/robot_variants.yaml) from the robot description
 the lab supplied (g1_description.zip, 2026-11-19: g1_29dof_rev_1_0.urdf + meshes/).
 
-    python scripts/prepare_g1_v2.py --src <unzipped g1_description> --out <description dir, e.g. ../g1_description_v2>
-    python scripts/prepare_g1_v2.py --src ../g1_description_v2 --out ../g1_description_v2 --d435_pitch_deg 26.15   # re-derive in place
+    python scripts/prepare_g1_v2.py --src <unzipped g1_description> --out <description dir, e.g. assets/g1_description_v2>
+    python scripts/prepare_g1_v2.py --src assets/g1_description_v2 --out assets/g1_description_v2 --d435_pitch_deg 26.15   # re-derive in place
 
 Writes into --out:
   g1_29dof_rev_1_0.urdf   the supplied URDF, unchanged

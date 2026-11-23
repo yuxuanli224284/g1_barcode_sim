@@ -84,10 +84,10 @@ def robot_urdf_path(rcfg) -> str:
     """URDF of a robot variant imported from a description directory (robot.yaml asset)."""
     from ..config import PKG_ROOT
     a = rcfg["asset"]
-    d = a["description_dir"] or os.environ.get("G1_V2_DESCRIPTION") or os.path.join(os.path.dirname(PKG_ROOT), "g1_description_v2")
+    d = a["description_dir"] or os.environ.get("G1_V2_DESCRIPTION") or os.path.join(PKG_ROOT, "assets", "g1_description_v2")
     p = os.path.join(d, a["urdf"])
     if not os.path.exists(p):
-        raise FileNotFoundError(f"{p} not found: prepare the description with scripts/prepare_g1_v2.py (or set $G1_V2_DESCRIPTION)")
+        raise FileNotFoundError(f"{p} not found: the description ships in assets/g1_description_v2 (git lfs pull for meshes/scan_tool.obj), or set $G1_V2_DESCRIPTION")
     return p
 
 

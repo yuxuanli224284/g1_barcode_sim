@@ -1,0 +1,170 @@
+{
+ "d435": {
+  "link": "d435_link",
+  "visual_bounds_in_link": [
+   [
+    0.004945454532044334,
+    -0.06491426378695492,
+    0.007500032672440192
+   ],
+   [
+    0.030000168688047005,
+    0.025000023177551605,
+    0.03250007591223958
+   ]
+  ],
+  "module_origin_in_link": [
+   0.0258,
+   -0.0025,
+   0.02
+  ],
+  "joint_in_torso": {
+   "pos": [
+    0.0586235,
+    0.01753,
+    0.46987
+   ],
+   "rpy": [
+    0.0,
+    0.4564035994,
+    0.0
+   ]
+  }
+ },
+ "left_d405": {
+  "parent_link": "left_wrist_yaw_link",
+  "front_face_centre": [
+   0.09,
+   0.005,
+   0.14
+  ],
+  "normal": [
+   0.984,
+   -0.0,
+   -0.1782
+  ],
+  "pos": [
+   0.09,
+   0.014,
+   0.14
+  ],
+  "rot_wxyz_ros": [
+   0.453253,
+   -0.542735,
+   0.542735,
+   -0.453253
+  ],
+  "pitch_down_deg": 10.27,
+  "urdf_optical_frame_pos": [
+   0.03,
+   0.04,
+   0.04
+  ]
+ },
+ "scanner": {
+  "parent_link": "left_wrist_yaw_link",
+  "window_centre": [
+   0.1419,
+   0.005,
+   0.0951
+  ],
+  "window_normal": [
+   0.9987,
+   0.0008,
+   0.0515
+  ],
+  "tool_axis": [
+   1.0,
+   0.0,
+   0.0008
+  ],
+  "rim_depth_m": 0.0152,
+  "angle_window_normal_vs_axis_deg": 2.91
+ },
+ "clearance_boxes": [
+  {
+   "name": "bracket",
+   "link": "left_wrist_yaw_link",
+   "center": [
+    0.0815,
+    0.005,
+    0.0753
+   ],
+   "size": [
+    0.0841,
+    0.047,
+    0.1908
+   ]
+  },
+  {
+   "name": "scanner_head",
+   "link": "left_wrist_yaw_link",
+   "center": [
+    0.1111,
+    0.0049,
+    0.0931
+   ],
+   "size": [
+    0.092,
+    0.0752,
+    0.0461
+   ]
+  },
+  {
+   "name": "scanner_handle",
+   "link": "left_wrist_yaw_link",
+   "center": [
+    0.0999,
+    0.005,
+    0.0175
+   ],
+   "size": [
+    0.0676,
+    0.0521,
+    0.105
+   ]
+  },
+  {
+   "name": "left_d405",
+   "link": "left_wrist_yaw_link",
+   "center": [
+    0.0789,
+    0.005,
+    0.1418
+   ],
+   "size": [
+    0.0296,
+    0.0421,
+    0.0449
+   ]
+  },
+  {
+   "name": "right_d405",
+   "link": "right_wrist_yaw_link",
+   "center": [
+    0.0806,
+    -0.0,
+    -0.0628
+   ],
+   "size": [
+    0.0392,
+    0.0421,
+    0.0468
+   ]
+  },
+  {
+   "name": "right_d405_mount",
+   "link": "right_wrist_yaw_link",
+   "center": [
+    0.0738,
+    -0.0,
+    -0.0285
+   ],
+   "size": [
+    0.0348,
+    0.068,
+    0.1251
+   ]
+  }
+ ]
+}
